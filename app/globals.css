@@ -1,0 +1,182 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-app: 'Outfit', sans-serif;
+    --font-chat: 'Inter', sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html {
+    font-family: var(--font-app);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: var(--font-app);
+    background:
+      radial-gradient(circle at top left, rgba(59, 73, 223, 0.08), transparent 30%),
+      linear-gradient(180deg, #F8FAFF 0%, #F1F5F9 44%, #EEF4FF 100%);
+    color: #0F172A;
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    font-family: var(--font-app);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+@layer utilities {
+  /* Animated score ring */
+  .score-ring-animate {
+    animation: scoreRingAnim 1.2s ease-out forwards;
+  }
+
+  /* Progress bar animated */
+  .progress-animate {
+    animation: progressAnim 1s ease-out forwards;
+  }
+
+  .surface-grid {
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .soft-panel {
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.05),
+      0 16px 40px rgba(15, 23, 42, 0.06);
+  }
+
+  .interactive-lift {
+    transition:
+      transform 180ms ease,
+      box-shadow 180ms ease,
+      border-color 180ms ease,
+      background-color 180ms ease,
+      color 180ms ease;
+  }
+
+  .interactive-lift:hover {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.05),
+      0 18px 44px rgba(59, 73, 223, 0.10);
+  }
+
+  .page-enter {
+    animation: pageEnter 360ms ease both;
+  }
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    .score-ring-animate,
+    .progress-animate,
+    .page-enter,
+    [class*="animate-"],
+    [class*="transition"] {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+@keyframes scoreRingAnim {
+  from { stroke-dashoffset: 283; }
+  to { stroke-dashoffset: var(--target-offset, 0); }
+}
+
+@keyframes progressAnim {
+  from { width: 0%; }
+  to { width: var(--target-width, 0%); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeScaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-bar {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes pageEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.25s ease-out forwards;
+}
+
+.animate-slide-in-up {
+  animation: slideInUp 0.25s ease-out forwards;
+}
+
+.animate-fade-scale-in {
+  animation: fadeScaleIn 0.2s ease-out forwards;
+}
+
+.animate-toast-in {
+  animation: toastIn 0.3s ease-out forwards;
+}
+
+.animate-pulse-bar {
+  animation: pulse-bar 1.5s ease-in-out infinite;
+}
+
+/* ATS ring using conic-gradient */
+.ats-ring {
+  background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
+              conic-gradient(#3b49df var(--ats-pct, 74%), #E2E8F0 0);
+}
+
+/* Resume preview paper shadow */
+.resume-paper {
+  box-shadow: 0 4px 6px -1px rgba(15,23,42,0.06), 0 10px 15px -3px rgba(15,23,42,0.1);
+}

@@ -1,0 +1,57 @@
+   ▲ Next.js 15.1.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/26) ...
+   Generating static pages (6/26) 
+   Generating static pages (12/26) 
+   Generating static pages (19/26) 
+ ✓ Generating static pages (26/26)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+┌ ○ /                                    184 B           106 kB
+├ ○ /_not-found                          983 B           106 kB
+├ ○ /admin/dashboard                     6.12 kB         119 kB
+├ ○ /admin/job-details                   3.97 kB         117 kB
+├ ○ /admin/students-details              2.48 kB         108 kB
+├ ƒ /api/activity                        184 B           106 kB
+├ ƒ /api/ai/enhance                      184 B           106 kB
+├ ƒ /api/auth/login                      184 B           106 kB
+├ ƒ /api/auth/logout                     184 B           106 kB
+├ ƒ /api/auth/register                   184 B           106 kB
+├ ƒ /api/dashboard/stats                 184 B           106 kB
+├ ƒ /api/notifications                   184 B           106 kB
+├ ƒ /api/notifications/[id]/read         184 B           106 kB
+├ ƒ /api/notifications/read-all          184 B           106 kB
+├ ƒ /api/officer/students                184 B           106 kB
+├ ƒ /api/resume                          184 B           106 kB
+├ ƒ /api/resume/[resumeId]               184 B           106 kB
+├ ƒ /api/resume/[resumeId]/ats           184 B           106 kB
+├ ƒ /api/resume/[resumeId]/download      184 B           106 kB
+├ ƒ /api/user/me                         184 B           106 kB
+├ ○ /dashboard                           7.25 kB         159 kB
+├ ○ /downloads                           3.91 kB         109 kB
+├ ○ /login                               3.09 kB         153 kB
+├ ○ /onboarding                          3.83 kB         117 kB
+├ ○ /placement-readiness                 3.88 kB         160 kB
+├ ƒ /resume/[resumeId]/ats               7.33 kB         165 kB
+├ ƒ /resume/[resumeId]/editor            13 kB           143 kB
+├ ○ /resume/create                       5.63 kB         118 kB
+├ ○ /resume/upload                       2.88 kB         116 kB
+└ ○ /settings                            3.73 kB         119 kB
++ First Load JS shared by all            105 kB
+  ├ chunks/1517-c8508629ea9faa60.js      50.5 kB
+  ├ chunks/4bd1b696-6360e0b085418602.js  52.9 kB
+  └ other shared chunks (total)          2.05 kB
+
+
+ƒ Middleware                             32.5 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

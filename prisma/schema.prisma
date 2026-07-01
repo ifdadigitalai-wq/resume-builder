@@ -1,0 +1,82 @@
+generator client {
+  provider        = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum Role {
+  STUDENT
+  OFFICER
+}
+
+enum ResumeStatus {
+  DRAFT
+  COMPLETE
+  SUBMITTED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         Role      @default(STUDENT)
+  studentId    String?   
+  batch        String?
+  course       String?
+  avatarUrl    String?
+  phone        String?
+  linkedIn     String?
+  github       String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  resumes      Resume[]
+  jobsPosted   JobRequirement[]
+}
+
+model Resume {
+  id              String       @id @default(cuid())
+  userId          String
+  title           String
+  status          ResumeStatus @default(DRAFT)
+  completionScore Int          @default(0)
+  sections        Json         // Structure matches ResumeSections type
+  atsScore        Int?
+  deletedAt       DateTime?    // Soft-delete support
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model JobRequirement {
+  id             String    @id @default(cuid())
+  officerId      String
+  title          String
+  company        String
+  description    String
+  requiredSkills String[]
+  deadline       DateTime?
+  createdAt      DateTime  @default(now())
+  officer        User      @relation(fields: [officerId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Activity {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // RESUME_CREATED, RESUME_COMPLETED, ATS_RUN, RESUME_DOWNLOADED
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+}

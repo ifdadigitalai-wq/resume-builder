@@ -1,0 +1,57 @@
+﻿   Γû▓ Next.js 15.1.0
+   - Environments: .env
+
+   Creating an optimized production build ...
+ Γ£ô Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/26) ...
+   Generating static pages (6/26) 
+   Generating static pages (12/26) 
+   Generating static pages (19/26) 
+ Γ£ô Generating static pages (26/26)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                              Size     First Load JS
+Γöî Γùï /                                    184 B           106 kB
+Γö£ Γùï /_not-found                          983 B           106 kB
+Γö£ Γùï /admin/dashboard                     6.12 kB         119 kB
+Γö£ Γùï /admin/job-details                   3.97 kB         117 kB
+Γö£ Γùï /admin/students-details              2.48 kB         108 kB
+Γö£ ╞Æ /api/activity                        184 B           106 kB
+Γö£ ╞Æ /api/ai/enhance                      184 B           106 kB
+Γö£ ╞Æ /api/auth/login                      184 B           106 kB
+Γö£ ╞Æ /api/auth/logout                     184 B           106 kB
+Γö£ ╞Æ /api/auth/register                   184 B           106 kB
+Γö£ ╞Æ /api/dashboard/stats                 184 B           106 kB
+Γö£ ╞Æ /api/notifications                   184 B           106 kB
+Γö£ ╞Æ /api/notifications/[id]/read         184 B           106 kB
+Γö£ ╞Æ /api/notifications/read-all          184 B           106 kB
+Γö£ ╞Æ /api/officer/students                184 B           106 kB
+Γö£ ╞Æ /api/resume                          184 B           106 kB
+Γö£ ╞Æ /api/resume/[resumeId]               184 B           106 kB
+Γö£ ╞Æ /api/resume/[resumeId]/ats           184 B           106 kB
+Γö£ ╞Æ /api/resume/[resumeId]/download      184 B           106 kB
+Γö£ ╞Æ /api/user/me                         184 B           106 kB
+Γö£ Γùï /dashboard                           7.25 kB         159 kB
+Γö£ Γùï /downloads                           3.91 kB         109 kB
+Γö£ Γùï /login                               3.09 kB         153 kB
+Γö£ Γùï /onboarding                          3.83 kB         117 kB
+Γö£ Γùï /placement-readiness                 3.88 kB         160 kB
+Γö£ ╞Æ /resume/[resumeId]/ats               7.33 kB         165 kB
+Γö£ ╞Æ /resume/[resumeId]/editor            13 kB           143 kB
+Γö£ Γùï /resume/create                       5.63 kB         118 kB
+Γö£ Γùï /resume/upload                       2.88 kB         116 kB
+Γöö Γùï /settings                            3.73 kB         119 kB
++ First Load JS shared by all            105 kB
+  Γö£ chunks/1517-c8508629ea9faa60.js      50.5 kB
+  Γö£ chunks/4bd1b696-6360e0b085418602.js  52.9 kB
+  Γöö other shared chunks (total)          2.05 kB
+
+
+╞Æ Middleware                             32.5 kB
+
+Γùï  (Static)   prerendered as static content
+╞Æ  (Dynamic)  server-rendered on demand
+
