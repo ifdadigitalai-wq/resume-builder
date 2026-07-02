@@ -18,7 +18,7 @@ export async function GET() {
       db.activity.count({
         where: { userId: session.id, type: 'RESUME_DOWNLOADED' },
       }),
-    ])
+    ]) as [number, Array<{ atsScore: number | null; updatedAt: Date; title: string }>, number]
 
     const latestResume = await db.resume.findFirst({
       where: { userId: session.id },
@@ -57,7 +57,7 @@ export async function GET() {
         atsScore: { gte: 80 },
       },
     }),
-  ])
+  ]) as [number, number, Array<{ atsScore: number | null }>, number]
 
   const avgAtsScore = resumesWithAts.length
     ? Math.round(resumesWithAts.reduce((acc, r) => acc + (r.atsScore ?? 0), 0) / resumesWithAts.length)
