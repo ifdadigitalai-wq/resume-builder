@@ -7,7 +7,10 @@ export async function getSession(): Promise<JWTPayload | null> {
     const token = cookieStore.get('token')?.value || cookieStore.get('session_token')?.value
     if (!token) return null
     return await verifyToken(token)
-  } catch (e) {
+  } catch (e: any) {
+    if (e && (e.digest === 'DYNAMIC_SERVER_USAGE' || e.message?.includes('Dynamic server usage'))) {
+      throw e
+    }
     console.error('getSession exception:', e)
     return null
   }
