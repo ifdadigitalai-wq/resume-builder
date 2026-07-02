@@ -36,9 +36,25 @@ export async function GET(req: Request) {
       },
       _count: { select: { resumes: true } },
     },
-  })
+  }) as Array<{
+    id: string
+    name: string
+    email: string
+    studentId: string | null
+    course: string | null
+    batch: string | null
+    updatedAt: Date
+    resumes: Array<{
+      atsScore: number | null
+      completionScore: number
+      sections: any
+    }>
+    _count: {
+      resumes: number
+    }
+  }>
 
-  let records = students.map((s: any) => {
+  let records = students.map(s => {
     const latestResume = s.resumes[0]
     const sections = (latestResume?.sections as any) || {}
     const skills: string[] = []
