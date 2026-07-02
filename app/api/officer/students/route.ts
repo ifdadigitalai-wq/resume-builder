@@ -38,7 +38,7 @@ export async function GET(req: Request) {
     },
   })
 
-  let records = students.map(s => {
+  let records = students.map((s: any) => {
     const latestResume = s.resumes[0]
     const sections = (latestResume?.sections as any) || {}
     const skills: string[] = []
