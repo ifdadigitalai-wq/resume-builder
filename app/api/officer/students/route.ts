@@ -31,6 +31,7 @@ export async function GET(req: Request) {
     where: whereClause,
     include: {
       resumes: {
+        where: { deletedAt: null },
         orderBy: { updatedAt: 'desc' },
         take: 1,
       },
@@ -73,6 +74,19 @@ export async function GET(req: Request) {
           } else if (typeof item.name === 'string') {
             skills.push(item.name)
           }
+        }
+      })
+    }
+
+    // Also extract techStack from projects for richer skill matching
+    if (Array.isArray(sections.projects)) {
+      sections.projects.forEach((proj: any) => {
+        if (Array.isArray(proj?.techStack)) {
+          proj.techStack.forEach((tech: any) => {
+            if (typeof tech === 'string' && !skills.includes(tech)) {
+              skills.push(tech)
+            }
+          })
         }
       })
     }

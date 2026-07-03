@@ -77,7 +77,7 @@ export default function MatchedJobsPage() {
         name: s.name,
         branch: s.course || 'N/A',
         year: s.batch || 'N/A',
-        atsScore: s.latestAtsScore || 0,
+        atsScore: s.latestAtsScore ?? 0,
         skills: s.skills || [],
       }));
 
@@ -181,12 +181,30 @@ export default function MatchedJobsPage() {
     const missingSkills: string[] = [];
 
     if (required.length > 0) {
-      const studentSkillsLower = (student.skills || []).map((s) => s.toLowerCase());
+      const studentSkillsLower = (student.skills || []).map((s) => s.toLowerCase().trim());
       required.forEach((reqSkill) => {
-        const reqSkillLower = reqSkill.toLowerCase();
-        const hasSkill = studentSkillsLower.some(
-          (s) => s.includes(reqSkillLower) || reqSkillLower.includes(s)
-        );
+        const reqSkillLower = reqSkill.toLowerCase().trim();
+        // More accurate matching: check for exact match, or word-boundary substring match
+        const hasSkill = studentSkillsLower.some((s) => {
+          // Exact match
+          if (s === reqSkillLower) return true;
+          // Check if multi-word required skill words are found in student skills or vice versa
+          const reqWords = reqSkillLower.split(/[\s/,.-]+/).filter(Boolean);
+          const sWords = s.split(/[\s/,.-]+/).filter(Boolean);
+          // Required skill words found in student skill
+          if (reqWords.length > 1 && reqWords.every(w => s.includes(w))) return true;
+          // Student skill words found in required skill  
+          if (sWords.length > 1 && sWords.every(w => reqSkillLower.includes(w))) return true;
+          // Single word exact match (avoid 'c' matching 'react')
+          if (reqWords.length === 1 && sWords.length === 1) {
+            return s === reqSkillLower;
+          }
+          // One is a substring of the other, but only if the shorter one is at least 3 chars
+          const shorter = s.length < reqSkillLower.length ? s : reqSkillLower;
+          const longer = s.length < reqSkillLower.length ? reqSkillLower : s;
+          if (shorter.length >= 3 && longer.includes(shorter)) return true;
+          return false;
+        });
         if (hasSkill) {
           matchedSkills.push(reqSkill);
         } else {
@@ -214,7 +232,7 @@ export default function MatchedJobsPage() {
     );
     const branchScore = matchesBranch ? 100 : 0;
 
-    const atsScore = student.atsScore || 0;
+    const atsScore = student.atsScore ?? 0;
 
     let overallScore = 0;
     if (required.length > 0) {
@@ -242,7 +260,20 @@ export default function MatchedJobsPage() {
           matchDetails,
         };
       })
-      .filter((s) => s.matchDetails.overallScore >= 30 || s.matchDetails.branchMatch)
+      .filter((s) => {
+        // A student matches if they have at least one matched skill, or branch alignment,
+        // AND their overall score is meaningful (>= 20)
+        const hasSkillMatch = s.matchDetails.matchedSkills.length > 0;
+        const hasBranchMatch = s.matchDetails.branchMatch;
+        const hasDecentScore = s.matchDetails.overallScore >= 20;
+        
+        // If the job has required skills, require at least one skill match or branch match
+        if ((selectedJob.requiredSkills || []).length > 0) {
+          return (hasSkillMatch || hasBranchMatch) && hasDecentScore;
+        }
+        // If no required skills, use branch + ATS with a reasonable threshold
+        return hasBranchMatch || hasDecentScore;
+      })
       .sort((a, b) => b.matchDetails.overallScore - a.matchDetails.overallScore);
   }, [selectedJob, students]);
 
