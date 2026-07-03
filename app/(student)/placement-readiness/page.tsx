@@ -143,7 +143,7 @@ export default function PlacementReadinessPage() {
     {
       label: 'Profile Strength',
       value: stats.hasLinkedIn ? 'Excellent' : 'Good',
-      detail: stats.hasLinkedIn ? 'LinkedIn connected' : 'LinkedIn missing',
+      detail: stats.hasLinkedIn ? 'LinkedIn connected' : '',
       content: stats.hasLinkedIn ? (
         <Badge variant="green" className="mt-4">Linked</Badge>
       ) : (

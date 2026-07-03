@@ -25,7 +25,7 @@ export default function OnboardingPage() {
     password: '',
     enrollmentNo: '',
     department: 'Kalkaji',
-    batch: '3rd',
+    batch: 'Accounting',
   });
   
   const [error, setError] = useState('');
@@ -71,8 +71,8 @@ export default function OnboardingPage() {
           password: formData.password,
           role: formData.role,
           enrollmentNo: formData.role === 'STUDENT' ? formData.enrollmentNo : undefined,
-          department: formData.department,
-          batch: formData.role === 'STUDENT' ? formData.batch : undefined,
+          course: formData.role === 'STUDENT' ? formData.batch : formData.department,
+          batch: formData.role === 'STUDENT' ? formData.department : undefined,
         }),
       });
 
@@ -177,14 +177,26 @@ export default function OnboardingPage() {
                   ]}
                 />
                 <Select 
-                  label="Current Batch Year" 
+                  label="Course Name" 
                   value={formData.batch}
                   onChange={(e) => setFormData(f => ({ ...f, batch: e.target.value }))}
                   options={[
-                    { value: '1st', label: '1st Year' },
-                    { value: '2nd', label: '2nd Year' },
-                    { value: '3rd', label: '3rd Year' },
-                    { value: '4th', label: '4th Year' },
+                    { value: 'Accounting', label: 'Accounting' },
+                    { value: 'SAP', label: 'SAP' },
+                    { value: 'HR Executive', label: 'HR Executive' },
+                    { value: 'Data Analytics & Business Intelligence', label: 'Data Analytics & Business Intelligence' },
+                    { value: 'Stock Market & Forex', label: 'Stock Market & Forex' },
+                    { value: 'Artificial Intelligence', label: 'Artificial Intelligence' },
+                    { value: 'Programming & Software Development', label: 'Programming & Software Development' },
+                    { value: 'Cyber Security & Ethical Hacking', label: 'Cyber Security & Ethical Hacking' },
+                    { value: 'Digital Marketing', label: 'Digital Marketing' },
+                    { value: 'Web Design & Development', label: 'Web Design & Development' },
+                    { value: 'Mobile App Development', label: 'Mobile App Development' },
+                    { value: 'Multimedia, Design & Animation', label: 'Multimedia, Design & Animation' },
+                    { value: 'Computer Hardware & Networking', label: 'Computer Hardware & Networking' },
+                    { value: 'NIELIT Certified Courses', label: 'NIELIT Certified Courses' },
+                    { value: 'Short Term Courses', label: 'Short Term Courses' },
+                    { value: 'Long Term Courses', label: 'Long Term Courses' },
                   ]}
                 />
               </>
@@ -210,8 +222,8 @@ export default function OnboardingPage() {
               {formData.role === 'STUDENT' && (
                 <>
                   <div>Enrollment No:</div><div className="text-white font-bold">{formData.enrollmentNo}</div>
-                  <div>Department:</div><div className="text-white font-bold">{formData.department}</div>
-                  <div>Batch:</div><div className="text-white font-bold">{formData.batch}</div>
+                  <div>Branch:</div><div className="text-white font-bold">{formData.department}</div>
+                  <div>Course Name:</div><div className="text-white font-bold">{formData.batch}</div>
                 </>
               )}
               {formData.role === 'OFFICER' && (

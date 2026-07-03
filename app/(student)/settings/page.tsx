@@ -14,8 +14,8 @@ export default function SettingsPage() {
     name: '',
     email: '',
     phone: '',
-    department: 'CSE',
-    batch: '3rd',
+    department: 'Kalkaji',
+    course: 'Accounting',
   })
 
   useEffect(() => {
@@ -27,8 +27,8 @@ export default function SettingsPage() {
             name: data.user.name ?? '',
             email: data.user.email ?? '',
             phone: data.user.phone ?? '',
-            department: data.user.department ?? 'CSE',
-            batch: data.user.batch ?? '3rd',
+            department: data.user.batch ?? 'Kalkaji',
+            course: data.user.course ?? 'Accounting',
           })
         }
       })
@@ -43,8 +43,8 @@ export default function SettingsPage() {
         body: JSON.stringify({
           name: profile.name,
           phone: profile.phone,
-          department: profile.department,
-          batch: profile.batch,
+          batch: profile.department,
+          course: profile.course,
         })
       })
       if (!res.ok) throw new Error('Save settings failed')
@@ -123,14 +123,26 @@ export default function SettingsPage() {
               ]}
             />
             <Select
-              label="Year"
-              value={profile.batch}
-              onChange={(e) => setProfile(p => ({ ...p, batch: e.target.value }))}
+              label="Course Name"
+              value={profile.course}
+              onChange={(e) => setProfile(p => ({ ...p, course: e.target.value }))}
               options={[
-                { value: '1st', label: '1st Year' },
-                { value: '2nd', label: '2nd Year' },
-                { value: '3rd', label: '3rd Year' },
-                { value: '4th', label: '4th Year' },
+                { value: 'Accounting', label: 'Accounting' },
+                { value: 'SAP', label: 'SAP' },
+                { value: 'HR Executive', label: 'HR Executive' },
+                { value: 'Data Analytics & Business Intelligence', label: 'Data Analytics & Business Intelligence' },
+                { value: 'Stock Market & Forex', label: 'Stock Market & Forex' },
+                { value: 'Artificial Intelligence', label: 'Artificial Intelligence' },
+                { value: 'Programming & Software Development', label: 'Programming & Software Development' },
+                { value: 'Cyber Security & Ethical Hacking', label: 'Cyber Security & Ethical Hacking' },
+                { value: 'Digital Marketing', label: 'Digital Marketing' },
+                { value: 'Web Design & Development', label: 'Web Design & Development' },
+                { value: 'Mobile App Development', label: 'Mobile App Development' },
+                { value: 'Multimedia, Design & Animation', label: 'Multimedia, Design & Animation' },
+                { value: 'Computer Hardware & Networking', label: 'Computer Hardware & Networking' },
+                { value: 'NIELIT Certified Courses', label: 'NIELIT Certified Courses' },
+                { value: 'Short Term Courses', label: 'Short Term Courses' },
+                { value: 'Long Term Courses', label: 'Long Term Courses' },
               ]}
             />
           </div>

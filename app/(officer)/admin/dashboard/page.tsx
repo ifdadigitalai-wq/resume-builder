@@ -32,7 +32,7 @@ export default function OfficerDashboardPage() {
   const [studentPassword, setStudentPassword] = useState('');
   const [studentDept, setStudentDept] = useState('Kalkaji');
   const [studentEnrollment, setStudentEnrollment] = useState('');
-  const [studentBatch, setStudentBatch] = useState('2026');
+  const [studentBatch, setStudentBatch] = useState('Accounting');
   const [formError, setFormError] = useState('');
   const [formLoading, setFormLoading] = useState(false);
 
@@ -51,8 +51,8 @@ export default function OfficerDashboardPage() {
               id: student.id,
               initials: getInitials(student.name),
               name: student.name,
-              branch: student.course ?? 'N/A',
-              year: student.batch ?? 'N/A',
+              branch: student.batch ?? 'N/A',
+              year: student.course ?? 'N/A',
               resumeStatus: hasResumes ? (student.latestAtsScore !== null ? 'Submitted' : 'Draft') : 'Not Started',
               atsScore: atsScore,
               placementReady: isReady,
@@ -95,9 +95,9 @@ export default function OfficerDashboardPage() {
           name: studentName,
           email: studentEmail,
           password: studentPassword,
-          course: studentDept,
+          course: studentBatch,
           studentId: studentEnrollment || undefined,
-          batch: studentBatch,
+          batch: studentDept,
         }),
       });
 
@@ -123,8 +123,8 @@ export default function OfficerDashboardPage() {
             id: student.id,
             initials: getInitials(student.name),
             name: student.name,
-            branch: student.course ?? 'N/A',
-            year: student.batch ?? 'N/A',
+            branch: student.batch ?? 'N/A',
+            year: student.course ?? 'N/A',
             resumeStatus: hasResumes ? (student.latestAtsScore !== null ? 'Submitted' : 'Draft') : 'Not Started',
             atsScore: student.latestAtsScore ?? 0,
             placementReady: student.placementStatus === 'Ready',
@@ -296,16 +296,28 @@ export default function OfficerDashboardPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Batch / Year</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Course Name</label>
               <select
                 value={studentBatch}
                 onChange={(e) => setStudentBatch(e.target.value)}
                 className="mt-1 block w-full h-[40px] px-3 py-2 bg-white border border-slate-300 rounded-[8px] text-sm focus:outline-none focus:ring-1 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT"
               >
-                <option value="2026">2026</option>
-                <option value="2025">2025</option>
-                <option value="2024">2024</option>
-                <option value="2023">2023</option>
+                <option value="Accounting">Accounting</option>
+                <option value="SAP">SAP</option>
+                <option value="HR Executive">HR Executive</option>
+                <option value="Data Analytics & Business Intelligence">Data Analytics & Business Intelligence</option>
+                <option value="Stock Market & Forex">Stock Market & Forex</option>
+                <option value="Artificial Intelligence">Artificial Intelligence</option>
+                <option value="Programming & Software Development">Programming & Software Development</option>
+                <option value="Cyber Security & Ethical Hacking">Cyber Security & Ethical Hacking</option>
+                <option value="Digital Marketing">Digital Marketing</option>
+                <option value="Web Design & Development">Web Design & Development</option>
+                <option value="Mobile App Development">Mobile App Development</option>
+                <option value="Multimedia, Design & Animation">Multimedia, Design & Animation</option>
+                <option value="Computer Hardware & Networking">Computer Hardware & Networking</option>
+                <option value="NIELIT Certified Courses">NIELIT Certified Courses</option>
+                <option value="Short Term Courses">Short Term Courses</option>
+                <option value="Long Term Courses">Long Term Courses</option>
               </select>
             </div>
           </div>

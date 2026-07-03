@@ -237,7 +237,7 @@ export default function StudentsTablePage() {
               <p><b>Email:</b> {selectedStudent.email}</p>
               <p><b>Student ID:</b> {selectedStudent.studentId || 'N/A'}</p>
               <p><b>Course:</b> {selectedStudent.course || 'N/A'}</p>
-              <p><b>Batch:</b> {selectedStudent.batch || 'N/A'}</p>
+              <p><b>Branch:</b> {selectedStudent.batch || 'N/A'}</p>
               <p><b>ATS Score:</b> {selectedStudent.latestAtsScore ?? 'Not available'}%</p>
               <p><b>Resume Count:</b> {selectedStudent.resumeCount}</p>
               <p><b>Profile Status:</b> {selectedStudent.resumeCount > 0 ? 'Complete' : 'Incomplete'}</p>

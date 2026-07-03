@@ -75,8 +75,8 @@ export default function MatchedJobsPage() {
       const fetchedStudents = (studentsData.students || []).map((s: any) => ({
         id: s.id,
         name: s.name,
-        branch: s.course || 'N/A',
-        year: s.batch || 'N/A',
+        branch: s.batch || 'N/A',
+        year: s.course || 'N/A',
         atsScore: s.latestAtsScore ?? 0,
         skills: s.skills || [],
       }));

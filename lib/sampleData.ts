@@ -132,16 +132,16 @@ export const sampleATSSuggestions: ATSSuggestion[] = [
 ];
 
 export const sampleOfficerStudents: OfficerStudent[] = [
-  { id: 'st-1', name: 'Arjun Sharma', initials: 'AS', branch: 'Kalkaji', year: '3rd', resumeStatus: 'Submitted', atsScore: 74, placementReady: true, lastUpdated: '2 days ago' },
-  { id: 'st-2', name: 'Priya Nair', initials: 'PN', branch: 'Badarpur', year: '4th', resumeStatus: 'Submitted', atsScore: 88, placementReady: true, lastUpdated: '1 day ago' },
-  { id: 'st-3', name: 'Rohit Verma', initials: 'RV', branch: 'Kalkaji', year: '3rd', resumeStatus: 'Draft', atsScore: 55, placementReady: false, lastUpdated: '5 days ago' },
-  { id: 'st-4', name: 'Sneha Gupta', initials: 'SG', branch: 'Badarpur', year: '4th', resumeStatus: 'Submitted', atsScore: 92, placementReady: true, lastUpdated: '3 hours ago' },
-  { id: 'st-5', name: 'Karan Mehta', initials: 'KM', branch: 'Kalkaji', year: '2nd', resumeStatus: 'Not Started', atsScore: 0, placementReady: false, lastUpdated: 'Never' },
-  { id: 'st-6', name: 'Ananya Krishnan', initials: 'AK', branch: 'Badarpur', year: '3rd', resumeStatus: 'Draft', atsScore: 61, placementReady: false, lastUpdated: '1 week ago' },
-  { id: 'st-7', name: 'Vikram Yadav', initials: 'VY', branch: 'Kalkaji', year: '4th', resumeStatus: 'Submitted', atsScore: 79, placementReady: true, lastUpdated: '4 days ago' },
-  { id: 'st-8', name: 'Meera Iyer', initials: 'MI', branch: 'Kalkaji', year: '2nd', resumeStatus: 'Draft', atsScore: 48, placementReady: false, lastUpdated: '2 weeks ago' },
-  { id: 'st-9', name: 'Aditya Bansal', initials: 'AB', branch: 'Kalkaji', year: '4th', resumeStatus: 'Submitted', atsScore: 83, placementReady: true, lastUpdated: '6 hours ago' },
-  { id: 'st-10', name: 'Deepika Rao', initials: 'DR', branch: 'Kalkaji', year: '3rd', resumeStatus: 'Not Started', atsScore: 0, placementReady: false, lastUpdated: 'Never' },
-  { id: 'st-11', name: 'Nikhil Joshi', initials: 'NJ', branch: 'Kalkaji', year: '4th', resumeStatus: 'Submitted', atsScore: 70, placementReady: true, lastUpdated: '1 day ago' },
-  { id: 'st-12', name: 'Pooja Tiwari', initials: 'PT', branch: 'Badarpur', year: '3rd', resumeStatus: 'Draft', atsScore: 42, placementReady: false, lastUpdated: '3 weeks ago' },
+  { id: 'st-1', name: 'Arjun Sharma', initials: 'AS', branch: 'Kalkaji', year: 'Data Analytics & Business Intelligence', resumeStatus: 'Submitted', atsScore: 74, placementReady: true, lastUpdated: '2 days ago' },
+  { id: 'st-2', name: 'Priya Nair', initials: 'PN', branch: 'Badarpur', year: 'Artificial Intelligence', resumeStatus: 'Submitted', atsScore: 88, placementReady: true, lastUpdated: '1 day ago' },
+  { id: 'st-3', name: 'Rohit Verma', initials: 'RV', branch: 'Kalkaji', year: 'Web Design & Development', resumeStatus: 'Draft', atsScore: 55, placementReady: false, lastUpdated: '5 days ago' },
+  { id: 'st-4', name: 'Sneha Gupta', initials: 'SG', branch: 'Badarpur', year: 'Mobile App Development', resumeStatus: 'Submitted', atsScore: 92, placementReady: true, lastUpdated: '3 hours ago' },
+  { id: 'st-5', name: 'Karan Mehta', initials: 'KM', branch: 'Kalkaji', year: 'Programming & Software Development', resumeStatus: 'Not Started', atsScore: 0, placementReady: false, lastUpdated: 'Never' },
+  { id: 'st-6', name: 'Ananya Krishnan', initials: 'AK', branch: 'Badarpur', year: 'Cyber Security & Ethical Hacking', resumeStatus: 'Draft', atsScore: 61, placementReady: false, lastUpdated: '1 week ago' },
+  { id: 'st-7', name: 'Vikram Yadav', initials: 'VY', branch: 'Kalkaji', year: 'Digital Marketing', resumeStatus: 'Submitted', atsScore: 79, placementReady: true, lastUpdated: '4 days ago' },
+  { id: 'st-8', name: 'Meera Iyer', initials: 'MI', branch: 'Kalkaji', year: 'Programming & Software Development', resumeStatus: 'Draft', atsScore: 48, placementReady: false, lastUpdated: '2 weeks ago' },
+  { id: 'st-9', name: 'Aditya Bansal', initials: 'AB', branch: 'Kalkaji', year: 'Data Analytics & Business Intelligence', resumeStatus: 'Submitted', atsScore: 83, placementReady: true, lastUpdated: '6 hours ago' },
+  { id: 'st-10', name: 'Deepika Rao', initials: 'DR', branch: 'Kalkaji', year: 'Accounting', resumeStatus: 'Not Started', atsScore: 0, placementReady: false, lastUpdated: 'Never' },
+  { id: 'st-11', name: 'Nikhil Joshi', initials: 'NJ', branch: 'Kalkaji', year: 'Multimedia, Design & Animation', resumeStatus: 'Submitted', atsScore: 70, placementReady: true, lastUpdated: '1 day ago' },
+  { id: 'st-12', name: 'Pooja Tiwari', initials: 'PT', branch: 'Badarpur', year: 'SAP', resumeStatus: 'Draft', atsScore: 42, placementReady: false, lastUpdated: '3 weeks ago' },
 ];

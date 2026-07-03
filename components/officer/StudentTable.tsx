@@ -20,7 +20,7 @@ export function StudentTable({ students }: StudentTableProps) {
         <table className="w-full text-left text-sm">
           <thead className="bg-[#EAF3FF] text-xs uppercase tracking-[0.12em] text-[#647A9A]">
             <tr>
-              {['Student Name', 'Branch', 'Year', 'Resume Status', 'ATS Score', 'Placement Ready', 'Last Updated', 'Actions'].map((head) => (
+              {['Student Name', 'Branch', 'Course', 'Resume Status', 'ATS Score', 'Placement Ready', 'Last Updated', 'Actions'].map((head) => (
                 <th key={head} className="px-4 py-3 font-extrabold">{head}</th>
               ))}
             </tr>
@@ -60,7 +60,7 @@ export function StudentTable({ students }: StudentTableProps) {
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="font-extrabold text-[#10233F]">{student.name}</p>
-                <p className="text-xs font-semibold text-[#647A9A]">{student.branch} - {student.year} Year</p>
+                <p className="text-xs font-semibold text-[#647A9A]">{student.branch} - {student.year}</p>
               </div>
               <span className={`font-extrabold ${scoreClass(student.atsScore)}`}>{student.atsScore || '-'}</span>
             </div>
