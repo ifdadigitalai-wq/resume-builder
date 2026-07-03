@@ -24,7 +24,7 @@ export default function OnboardingPage() {
     email: '',
     password: '',
     enrollmentNo: '',
-    department: 'CSE',
+    department: 'Kalkaji',
     batch: '3rd',
   });
   
@@ -168,13 +168,12 @@ export default function OnboardingPage() {
                   placeholder="e.g. 2022CSB1020"
                 />
                 <Select 
-                  label="Department" 
+                  label="Branch" 
                   value={formData.department}
                   onChange={(e) => setFormData(f => ({ ...f, department: e.target.value }))}
                   options={[
-                    { value: 'CSE', label: 'Computer Science' },
-                    { value: 'ECE', label: 'Electronics & Comm.' },
-                    { value: 'ME', label: 'Mechanical Eng.' },
+                    { value: 'Kalkaji', label: 'Kalkaji' },
+                    { value: 'Badarpur', label: 'Badarpur' },
                   ]}
                 />
                 <Select 

@@ -30,7 +30,7 @@ export default function OfficerDashboardPage() {
   const [studentName, setStudentName] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [studentPassword, setStudentPassword] = useState('');
-  const [studentDept, setStudentDept] = useState('CSE');
+  const [studentDept, setStudentDept] = useState('Kalkaji');
   const [studentEnrollment, setStudentEnrollment] = useState('');
   const [studentBatch, setStudentBatch] = useState('2026');
   const [formError, setFormError] = useState('');
@@ -290,10 +290,8 @@ export default function OfficerDashboardPage() {
                 onChange={(e) => setStudentDept(e.target.value)}
                 className="mt-1 block w-full h-[40px] px-3 py-2 bg-white border border-slate-300 rounded-[8px] text-sm focus:outline-none focus:ring-1 focus:ring-primary-DEFAULT focus:border-primary-DEFAULT"
               >
-                <option value="CSE">CSE</option>
-                <option value="ECE">ECE</option>
-                <option value="ME">ME</option>
-                <option value="Civil">Civil</option>
+                <option value="Kalkaji">Kalkaji</option>
+                <option value="Badarpur">Badarpur</option>
               </select>
             </div>
 

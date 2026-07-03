@@ -118,10 +118,8 @@ export default function SettingsPage() {
               value={profile.department}
               onChange={(e) => setProfile(p => ({ ...p, department: e.target.value }))}
               options={[
-                { value: 'CSE', label: 'Computer Science Engineering' },
-                { value: 'ECE', label: 'Electronics and Communication' },
-                { value: 'ME', label: 'Mechanical Engineering' },
-                { value: 'Civil', label: 'Civil Engineering' },
+                { value: 'Kalkaji', label: 'Kalkaji' },
+                { value: 'Badarpur', label: 'Badarpur' },
               ]}
             />
             <Select

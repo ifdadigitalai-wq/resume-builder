@@ -10,7 +10,7 @@ interface Activity {
   createdAt: string;
 }
 
-export function ActivityFeed() {
+export function ActivityFeed({ limit = 3 }: { limit?: number }) {
   const [activities, setActivities] = useState<Activity[]>([]);
 
   useEffect(() => {
@@ -68,17 +68,19 @@ export function ActivityFeed() {
     }
   };
 
+  const displayedActivities = activities.slice(0, limit);
+
   return (
     <div className="bg-white rounded-[10px] border border-border shadow-card p-5">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-sm font-semibold text-text-primary">Recent Activity</h3>
       </div>
       <div className="relative">
-        {activities.length > 0 && (
+        {displayedActivities.length > 0 && (
           <div className="absolute left-4 top-4 bottom-4 w-px bg-border" />
         )}
         <div className="space-y-5">
-          {activities.map((item) => {
+          {displayedActivities.map((item) => {
             const config = getActivityConfig(item.action, item.meta);
             const Icon = config.icon;
             const timeAgo = new Date(item.createdAt).toLocaleDateString('en-IN', {
@@ -100,7 +102,7 @@ export function ActivityFeed() {
               </div>
             );
           })}
-          {activities.length === 0 && (
+          {displayedActivities.length === 0 && (
             <div className="text-center py-6 text-xs text-text-muted italic">
               No recent activity logs found.
             </div>
