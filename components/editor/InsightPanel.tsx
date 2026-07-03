@@ -135,12 +135,29 @@ export function InsightPanel() {
   const resume = useResumeStore((s) => s.resume);
 
   const score = result?.overallScore ?? 0;
-  const rawKeywords = result?.keywords ?? [];
-  const matchedKeywords = rawKeywords.filter((k) => k.found).map((k) => k.keyword);
-  const missingKeywords = rawKeywords.filter((k) => !k.found).map((k) => k.keyword);
-  const keywordMatch = rawKeywords.length > 0
-    ? Math.round((matchedKeywords.length / rawKeywords.length) * 100)
-    : (result?.keywordScore ?? 0);
+  const rawKeywords = result?.keywords;
+  let matchedKeywords: string[] = [];
+  let missingKeywords: string[] = [];
+  let keywordMatch = 0;
+
+  if (Array.isArray(rawKeywords)) {
+    matchedKeywords = rawKeywords.filter((k) => k.found).map((k) => k.keyword);
+    missingKeywords = rawKeywords.filter((k) => !k.found).map((k) => k.keyword);
+    keywordMatch = rawKeywords.length > 0
+      ? Math.round((matchedKeywords.length / rawKeywords.length) * 100)
+      : (result?.keywordScore ?? 0);
+  } else if (rawKeywords && typeof rawKeywords === 'object') {
+    const matchedArr = (rawKeywords as any).matched || [];
+    const missingArr = (rawKeywords as any).missing || [];
+    matchedKeywords = matchedArr;
+    missingKeywords = missingArr;
+    const total = matchedArr.length + missingArr.length;
+    keywordMatch = total > 0
+      ? Math.round((matchedArr.length / total) * 100)
+      : ((rawKeywords as any).matchRate ?? result?.keywordScore ?? 0);
+  } else {
+    keywordMatch = result?.keywordScore ?? 0;
+  }
   const sectionCompleteness = result?.completenessScore ?? 0;
   const formattingScore = result?.formattingScore ?? 0;
 

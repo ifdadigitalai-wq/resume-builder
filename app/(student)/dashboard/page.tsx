@@ -25,6 +25,7 @@ export default function DashboardPage() {
     resumeCount: 0,
     latestAtsScore: 0,
     downloadCount: 0,
+    completionScore: 0,
   });
 
   useEffect(() => {
@@ -46,18 +47,19 @@ export default function DashboardPage() {
             resumeCount: data.resumeCount ?? 0,
             latestAtsScore: data.latestAtsScore ?? 0,
             downloadCount: data.downloadCount ?? 0,
+            completionScore: data.completionScore ?? 0,
           });
         }
       });
   }, []);
 
-  const deriveReadiness = (ats: number, resumeCount: number) => {
-    if (resumeCount > 0 && ats >= 80) return 'Ready';
-    if (resumeCount > 0) return 'Getting There';
+  const deriveReadiness = (ats: number, completion: number, resumeCount: number) => {
+    if (resumeCount > 0 && ats >= 80 && completion >= 90) return 'Ready';
+    if (resumeCount > 0 && completion >= 50) return 'Getting There';
     return 'Not Started';
   };
 
-  const readiness = deriveReadiness(stats.latestAtsScore, stats.resumeCount);
+  const readiness = deriveReadiness(stats.latestAtsScore, stats.completionScore, stats.resumeCount);
 
   return (
     <motion.div

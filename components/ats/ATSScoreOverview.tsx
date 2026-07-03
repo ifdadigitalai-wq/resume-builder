@@ -11,11 +11,24 @@ export function ATSScoreOverview() {
   const { analyze, isAnalyzing } = useATSAnalysis();
 
   const score = result?.overallScore ?? 0;
-  const foundKeywordsCount = result?.keywords?.filter((k) => k.found).length ?? 0;
-  const totalKeywordsCount = result?.keywords?.length ?? 0;
-  const keywordMatchRate = totalKeywordsCount > 0 
-    ? Math.round((foundKeywordsCount / totalKeywordsCount) * 100) 
-    : (result?.keywordScore ?? 0);
+  let keywordMatchRate = 0;
+  const rawKeywords = result?.keywords;
+
+  if (Array.isArray(rawKeywords)) {
+    const foundCount = rawKeywords.filter((k) => k.found).length;
+    keywordMatchRate = rawKeywords.length > 0
+      ? Math.round((foundCount / rawKeywords.length) * 100)
+      : (result?.keywordScore ?? 0);
+  } else if (rawKeywords && typeof rawKeywords === 'object') {
+    const matchedArr = (rawKeywords as any).matched || [];
+    const missingArr = (rawKeywords as any).missing || [];
+    const total = matchedArr.length + missingArr.length;
+    keywordMatchRate = total > 0
+      ? Math.round((matchedArr.length / total) * 100)
+      : ((rawKeywords as any).matchRate ?? result?.keywordScore ?? 0);
+  } else {
+    keywordMatchRate = result?.keywordScore ?? 0;
+  }
 
   return (
     <div className="relative isolate overflow-hidden rounded-[16px] border border-[#BFD7FF] bg-[#EAF3FF] p-6 shadow-[0_1px_2px_rgba(15,23,42,0.06),0_18px_42px_rgba(37,99,235,0.12)]">

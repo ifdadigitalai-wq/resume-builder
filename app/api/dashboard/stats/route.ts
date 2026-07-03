@@ -8,9 +8,9 @@ export async function GET() {
 
   if (session.role === 'STUDENT') {
     const [resumes, resumesWithAts, downloads] = await Promise.all([
-      db.resume.count({ where: { userId: session.id } }),
+      db.resume.count({ where: { userId: session.id, deletedAt: null } }),
       db.resume.findMany({
-        where: { userId: session.id, atsScore: { not: null } },
+        where: { userId: session.id, deletedAt: null, atsScore: { not: null } },
         orderBy: { updatedAt: 'desc' },
         take: 5,
         select: { atsScore: true, updatedAt: true, title: true },
@@ -20,8 +20,10 @@ export async function GET() {
       }),
     ]) as [number, Array<{ atsScore: number | null; updatedAt: Date; title: string }>, number]
 
+    // Use the latest non-deleted resume as the single source of truth
+    // so that latestAtsScore, completionScore, and latestResumeId all reference the same resume
     const latestResume = await db.resume.findFirst({
-      where: { userId: session.id },
+      where: { userId: session.id, deletedAt: null },
       orderBy: { updatedAt: 'desc' },
       select: { completionScore: true, title: true, id: true, atsScore: true },
     })

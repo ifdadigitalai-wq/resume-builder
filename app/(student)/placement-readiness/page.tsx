@@ -37,6 +37,7 @@ export default function PlacementReadinessPage() {
         let skillCount = 0;
         let hasLinkedIn = false;
         let completionScore = data.completionScore ?? 0;
+        let atsScore = data.latestAtsScore ?? 0;
         const resumeId = data.latestResumeId || null;
 
         if (data.latestResumeId) {
@@ -47,20 +48,28 @@ export default function PlacementReadinessPage() {
             projectCount = sections.projects?.length ?? 0;
             const rawSkills = sections.skills || [];
             if (Array.isArray(rawSkills)) {
-              if (rawSkills.length > 0 && typeof rawSkills[0] === 'object') {
-                skillCount = rawSkills.reduce((acc: number, cat: any) => acc + (cat.skills?.length ?? 0), 0);
-              } else {
-                skillCount = rawSkills.length;
-              }
+              rawSkills.forEach((item: any) => {
+                if (typeof item === 'string') {
+                  skillCount++;
+                } else if (item && typeof item === 'object') {
+                  if (Array.isArray(item.skills)) {
+                    skillCount += item.skills.length;
+                  } else if (typeof item.name === 'string') {
+                    skillCount++;
+                  }
+                }
+              });
             }
             hasLinkedIn = !!(sections.personal?.socials?.linkedIn || sections.personal?.linkedIn);
             completionScore = calculateCompletion(sections);
+            // Use ATS score directly from the same resume to guarantee consistency
+            atsScore = resume.atsScore ?? 0;
           }
         }
 
         setStats({
           completionScore,
-          latestAtsScore: data.latestAtsScore ?? 0,
+          latestAtsScore: atsScore,
           projectCount,
           skillCount,
           hasLinkedIn,
@@ -73,14 +82,14 @@ export default function PlacementReadinessPage() {
 
   const readinessScore = Math.round((stats.completionScore * 0.5) + (stats.latestAtsScore * 0.5));
 
-  const getReadinessTier = (score: number) => {
-    if (score >= 80) return { label: 'Ready', variant: 'green' as const, title: 'You are Placement Ready!', desc: "Excellent job! Your profile stands out. Keep auditing against job descriptions for absolute match confidence." };
-    if (score >= 60) return { label: 'Almost Ready', variant: 'amber' as const, title: "You're Almost Placement Ready", desc: "Optimize your resume with high-impact improvements to boost ATS score and recruiter trust." };
-    if (score >= 40) return { label: 'Getting There', variant: 'blue' as const, title: "Getting There", desc: "Add more details, technical skills, and projects to align your profile with standard placement benchmarks." };
+  const getReadinessTier = (score: number, completion: number, ats: number) => {
+    if (ats >= 80 && completion >= 90) return { label: 'Ready', variant: 'green' as const, title: 'You are Placement Ready!', desc: "Excellent job! Your profile stands out. Keep auditing against job descriptions for absolute match confidence." };
+    if (completion >= 75 || ats >= 70) return { label: 'Almost Ready', variant: 'amber' as const, title: "You're Almost Placement Ready", desc: "Optimize your resume with high-impact improvements to boost ATS score and recruiter trust." };
+    if (completion >= 50 || ats >= 50) return { label: 'Getting There', variant: 'blue' as const, title: "Getting There", desc: "Add more details, technical skills, and projects to align your profile with standard placement benchmarks." };
     return { label: 'Not Ready', variant: 'gray' as const, title: "Let's build your profile", desc: "Complete more sections and run your first ATS audit to calculate baseline placement readiness." };
   };
 
-  const tier = getReadinessTier(readinessScore);
+  const tier = getReadinessTier(readinessScore, stats.completionScore, stats.latestAtsScore);
 
   const nextSteps = [];
   if (stats.projectCount < 2) {
@@ -95,6 +104,9 @@ export default function PlacementReadinessPage() {
   if (stats.completionScore < 90) {
     nextSteps.push({ text: 'Fill out missing sections in your resume', icon: Wrench });
   }
+
+  const actionCount = nextSteps.length;
+
   if (nextSteps.length === 0) {
     nextSteps.push({ text: 'Your resume is placement ready! Start applying to jobs.', icon: CheckCircle2 });
   }
@@ -232,7 +244,7 @@ export default function PlacementReadinessPage() {
             </h2>
           </div>
 
-          <Badge variant="blue">{nextSteps.length} actions</Badge>
+          <Badge variant="blue">{actionCount} actions</Badge>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
