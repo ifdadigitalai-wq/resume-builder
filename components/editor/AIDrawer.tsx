@@ -100,6 +100,7 @@ export function AIDrawer() {
             name: resume.personal?.fullName || 'Candidate',
             role: resume.experience?.[0]?.role || 'Software Engineer',
             skills: Array.isArray(resume.skills) ? resume.skills.join(', ') : '',
+            certifications: Array.isArray(resume.certifications) ? resume.certifications.map(c => c.name).join(', ') : '',
           },
         }),
       });

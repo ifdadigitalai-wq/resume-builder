@@ -125,6 +125,7 @@ export default function ATSPage() {
             name: resume?.personal?.fullName || '',
             role: resume?.experience?.[0]?.role || '',
             skills: (resume?.skills as any[] || []).map(s => typeof s === 'string' ? s : (s as any).skills?.join(', ') || '').join(', '),
+            certifications: (resume?.certifications || []).map(c => c.name).join(', '),
           },
         }),
       });

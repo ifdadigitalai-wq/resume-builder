@@ -31,8 +31,9 @@ Original: ${input}
 Return only the improved text.`,
 
   suggest_skills: (input, ctx) =>
-    `Based on this job role context, suggest relevant skills to add to a resume. Return as a comma-separated list of skills only.
-Role context: ${input}`,
+    `Based on this job role context, suggest relevant skills to add to a resume.
+Candidate's existing skills: ${ctx.skills || 'None'}
+Return as a comma-separated list of skills only. Do NOT suggest any skills that are already present in the candidate's existing skills list. Keep suggestions strictly relevant to the role context: "${input}".`,
 
   fix_ats: (input, ctx) =>
     `You are an ATS optimization expert. Fix this specific ATS compatibility issue in the resume. 
@@ -42,7 +43,8 @@ Return only the optimized text/bullet replacement without explanation.`,
 
   suggest_certifications: (input, ctx) =>
     `Suggest 3-4 professional and industry-standard certifications for a candidate with role/skills context: "${input}". 
-Return a comma-separated list of certification names only. No explanation.`,
+Candidate's existing certifications: ${ctx.certifications || 'None'}
+Return a comma-separated list of certification names only. Do NOT suggest any certifications that are already present in the candidate's existing certifications list. No explanation.`,
 
   suggest_highlights: (input, ctx) =>
     `Based on the education/institution/field context: "${input}", suggest 2-3 key academic highlights, coursework, or project achievements that stand out on a resume. 
@@ -54,11 +56,12 @@ Return the formatted categories and skills only, in a clean, concise list.`,
 
   suggest_title: (input, ctx) =>
     `Suggest 3 professional, short, and punchy resume headlines or target role titles (e.g. "Full Stack Engineer | React & Node.js") for a candidate with this profile context: "${input}".
-Return only the list of titles separated by pipe | symbol. No explanation.`,
+Candidate's current target roles/titles: ${ctx.role || 'None'}
+Return only the list of titles separated by pipe | symbol. Do NOT suggest any title that is already present in the candidate's current titles. No explanation.`,
 
   chat: (input, ctx) =>
     `You are an expert AI resume writing assistant. Assist the candidate with their resume editing query.
-Candidate context: Name: ${ctx.name || 'Candidate'}, Role: ${ctx.role || 'Software Engineer'}, Skills: ${ctx.skills || 'Not specified'}
+Candidate context: Name: ${ctx.name || 'Candidate'}, Role: ${ctx.role || 'Software Engineer'}, Skills: ${ctx.skills || 'Not specified'}, Certifications: ${ctx.certifications || 'Not specified'}
 Candidate query: "${input}"
 Provide a helpful, professional, and direct response or recommended resume copy without introductory filler.`,
 }
