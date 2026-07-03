@@ -1,27 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { Eye, Search, X } from 'lucide-react';
-
-const studentsData = Array.from({ length: 55 }, (_, i) => ({
-  id: i + 1,
-  name: `Student ${i + 1}`,
-  reg: `IFDA/K/25-26/${1000 + i}`,
-  email: `student${i + 1}@gmail.com`,
-  course: ['B.Tech', 'BBA', 'BCA'][i % 3],
-  year: `${(i % 4) + 1} Year`,
-  phone: '9876543210',
-  address: 'Delhi, India',
-  ats: Math.floor(Math.random() * 100), // ATS %
-  profileComplete: Math.random() > 0.5, // true/false
-  updatedAt: new Date(
-    Date.now() - Math.random() * 10000000000
-  ).toLocaleDateString(),
-}));
+import { useState, useEffect } from 'react';
+import { Eye, Search, X, Loader } from 'lucide-react';
 
 export default function StudentsTablePage() {
   const [search, setSearch] = useState('');
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [students, setStudents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [atsFilter, setAtsFilter] = useState('All');
   const [profileFilter, setProfileFilter] = useState('All');
@@ -29,22 +15,45 @@ export default function StudentsTablePage() {
   const [currentPage, setCurrentPage] = useState(1);
   const perPage = 20;
 
+  // Fetch students from API
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const res = await fetch('/api/officer/students');
+        if (!res.ok) throw new Error('Failed to fetch students');
+        const data = await res.json();
+        setStudents(data.students || []);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+        setStudents([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
   // FILTER LOGIC
-  const filteredStudents = studentsData.filter((student) => {
+  const filteredStudents = students.filter((student) => {
     const matchesSearch = student.name
       .toLowerCase()
-      .includes(search.toLowerCase());
+      .includes(search.toLowerCase()) ||
+      student.email.toLowerCase().includes(search.toLowerCase()) ||
+      (student.studentId && student.studentId.toLowerCase().includes(search.toLowerCase()));
 
+    const ats = student.latestAtsScore ?? 0;
     const matchesATS =
       atsFilter === 'All' ||
-      (atsFilter === 'High' && student.ats >= 70) ||
-      (atsFilter === 'Medium' && student.ats >= 40 && student.ats < 70) ||
-      (atsFilter === 'Low' && student.ats < 40);
+      (atsFilter === 'High' && ats >= 70) ||
+      (atsFilter === 'Medium' && ats >= 40 && ats < 70) ||
+      (atsFilter === 'Low' && ats < 40);
 
+    const profileComplete = student.resumeCount > 0;
     const matchesProfile =
       profileFilter === 'All' ||
-      (profileFilter === 'Completed' && student.profileComplete) ||
-      (profileFilter === 'Incomplete' && !student.profileComplete);
+      (profileFilter === 'Completed' && profileComplete) ||
+      (profileFilter === 'Incomplete' && !profileComplete);
 
     return matchesSearch && matchesATS && matchesProfile;
   });
@@ -70,7 +79,7 @@ export default function StudentsTablePage() {
           <Search className="text-gray-400 mr-2" size={18} />
           <input
             type="text"
-            placeholder="Search..."
+            placeholder="Search by name, email, ID..."
             className="outline-none w-full"
             value={search}
             onChange={(e) => {
@@ -112,88 +121,109 @@ export default function StudentsTablePage() {
 
       {/* TABLE */}
       <div className="bg-white rounded-2xl shadow overflow-hidden">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-blue-100">
-            <tr>
-              <th className="p-4">Name</th>
-              <th>Reg</th>
-              <th>Email</th>
-              <th>Course</th>
-              <th>ATS %</th>
-              <th>Profile</th>
-              <th>Updated</th>
-              <th>Action</th>
-            </tr>
-          </thead>
+        {loading ? (
+          <div className="p-8 flex items-center justify-center gap-2">
+            <Loader size={20} className="animate-spin text-blue-600" />
+            <span className="text-gray-600">Loading students...</span>
+          </div>
+        ) : (
+          <>
+            <table className="w-full text-left text-sm">
+              <thead className="bg-blue-100">
+                <tr>
+                  <th className="p-4">Name</th>
+                  <th>Student ID</th>
+                  <th>Email</th>
+                  <th>Course</th>
+                  <th>ATS %</th>
+                  <th>Profile</th>
+                  <th>Last Active</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
 
-          <tbody>
-            {paginatedStudents.map((student) => (
-              <tr key={student.id} className="border-t hover:bg-gray-50">
-                <td className="p-4 font-medium">{student.name}</td>
-                <td>{student.reg}</td>
-                <td>{student.email}</td>
-                <td>{student.course}</td>
-                <td>
-                  <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      student.ats >= 70
-                        ? 'bg-green-100 text-green-600'
-                        : student.ats >= 40
-                        ? 'bg-yellow-100 text-yellow-600'
-                        : 'bg-red-100 text-red-600'
-                    }`}
-                  >
-                    {student.ats}%
-                  </span>
-                </td>
-                <td>
-                  {student.profileComplete ? '✅' : '❌'}
-                </td>
-                <td>{student.updatedAt}</td>
-                <td>
-                  <button
-                    onClick={() => setSelectedStudent(student)}
-                    className="text-blue-600 flex items-center gap-1"
-                  >
-                    <Eye size={16} /> View
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+              <tbody>
+                {paginatedStudents.map((student) => {
+                  const ats = student.latestAtsScore ?? 0;
+                  const profileComplete = student.resumeCount > 0;
+                  const lastActiveDate = new Date(student.lastActive).toLocaleDateString();
 
-        {paginatedStudents.length === 0 && (
-          <p className="p-4 text-center text-gray-400">
-            No data found
-          </p>
+                  return (
+                    <tr key={student.id} className="border-t hover:bg-gray-50">
+                      <td className="p-4 font-medium">{student.name}</td>
+                      <td className="text-gray-600 text-xs">{student.studentId || 'N/A'}</td>
+                      <td className="text-gray-600">{student.email}</td>
+                      <td>{student.course || 'N/A'}</td>
+                      <td>
+                        <span
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            ats >= 70
+                              ? 'bg-green-100 text-green-600'
+                              : ats >= 40
+                              ? 'bg-yellow-100 text-yellow-600'
+                              : 'bg-red-100 text-red-600'
+                          }`}
+                        >
+                          {ats}%
+                        </span>
+                      </td>
+                      <td>
+                        {profileComplete ? (
+                          <span className="text-green-600 font-semibold">✅ Complete</span>
+                        ) : (
+                          <span className="text-red-600 font-semibold">❌ Incomplete</span>
+                        )}
+                      </td>
+                      <td className="text-gray-600 text-xs">{lastActiveDate}</td>
+                      <td>
+                        <button
+                          onClick={() => setSelectedStudent(student)}
+                          className="text-blue-600 flex items-center gap-1 hover:text-blue-800"
+                        >
+                          <Eye size={16} /> View
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+
+            {paginatedStudents.length === 0 && (
+              <p className="p-4 text-center text-gray-400">
+                No students found
+              </p>
+            )}
+          </>
         )}
       </div>
 
       {/* PAGINATION */}
-      <div className="flex justify-center mt-6 gap-2">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 rounded ${
-              currentPage === i + 1
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-200'
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+      {!loading && totalPages > 1 && (
+        <div className="flex justify-center mt-6 gap-2">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i + 1)}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-200 hover:bg-gray-300'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* MODAL */}
       {selectedStudent && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-[350px] relative">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-xl w-[400px] relative max-h-[80vh] overflow-y-auto">
             <button
               onClick={() => setSelectedStudent(null)}
-              className="absolute right-3 top-3"
+              className="absolute right-3 top-3 hover:bg-gray-100 p-1 rounded"
             >
               <X />
             </button>
@@ -202,18 +232,23 @@ export default function StudentsTablePage() {
               Student Details
             </h2>
 
-            <div className="space-y-2 text-sm">
+            <div className="space-y-3 text-sm">
               <p><b>Name:</b> {selectedStudent.name}</p>
               <p><b>Email:</b> {selectedStudent.email}</p>
-              <p><b>Course:</b> {selectedStudent.course}</p>
-              <p><b>ATS:</b> {selectedStudent.ats}%</p>
-              <p><b>Profile:</b> {selectedStudent.profileComplete ? 'Complete' : 'Incomplete'}</p>
-              <p><b>Phone:</b> {selectedStudent.phone}</p>
-              <p><b>Address:</b> {selectedStudent.address}</p>
+              <p><b>Student ID:</b> {selectedStudent.studentId || 'N/A'}</p>
+              <p><b>Course:</b> {selectedStudent.course || 'N/A'}</p>
+              <p><b>Batch:</b> {selectedStudent.batch || 'N/A'}</p>
+              <p><b>ATS Score:</b> {selectedStudent.latestAtsScore ?? 'Not available'}%</p>
+              <p><b>Resume Count:</b> {selectedStudent.resumeCount}</p>
+              <p><b>Profile Status:</b> {selectedStudent.resumeCount > 0 ? 'Complete' : 'Incomplete'}</p>
+              <p><b>Placement Status:</b> {selectedStudent.placementStatus}</p>
+              <p><b>Last Active:</b> {new Date(selectedStudent.lastActive).toLocaleDateString()}</p>
+              {selectedStudent.skills && selectedStudent.skills.length > 0 && (
+                <p><b>Skills:</b> {selectedStudent.skills.join(', ')}</p>
+              )}
             </div>
           </div>
         </div>
       )}
     </div>
   );
-}

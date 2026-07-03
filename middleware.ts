@@ -14,25 +14,35 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next()
   }
 
-  const isOfficerPath = pathname.startsWith('/admin');
-  const isStudentPath = !isOfficerPath && 
-                        !pathname.startsWith('/api') && 
-                        pathname !== '/login' && 
-                        pathname !== '/register' && 
-                        pathname !== '/';
-
   const token = req.cookies.get('token')?.value || req.cookies.get('session_token')?.value
-  const payload = token ? await verifyToken(token) : null
+  let payload = null
 
+  // Verify token if it exists
+  if (token) {
+    try {
+      payload = await verifyToken(token)
+    } catch (error) {
+      // Token is invalid or expired, clear it
+      const res = NextResponse.redirect(new URL('/login', req.url))
+      res.cookies.set('token', '', { maxAge: 0, path: '/' })
+      res.cookies.set('session_token', '', { maxAge: 0, path: '/' })
+      return res
+    }
+  }
+
+  const isOfficerPath = pathname.startsWith('/admin')
+  const isStudentPath =
+    !isOfficerPath && !pathname.startsWith('/api') && pathname !== '/login' && pathname !== '/register' && pathname !== '/'
+
+  // If no valid authentication, redirect to login for protected routes
   if (!payload) {
-    // If not authenticated, restrict protected routes to login
     if (isOfficerPath || isStudentPath) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
     return NextResponse.next()
   }
 
-  // Mismatch token redirection
+  // Role-based route protection
   if (isOfficerPath && payload.role !== 'OFFICER') {
     return NextResponse.redirect(new URL('/dashboard', req.url))
   }
@@ -40,7 +50,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/admin/dashboard', req.url))
   }
 
-  // Prevent authenticated user from viewing login/register
+  // Prevent authenticated users from viewing login/register
   if (pathname === '/login' || pathname === '/register') {
     if (payload.role === 'OFFICER') {
       return NextResponse.redirect(new URL('/admin/dashboard', req.url))
