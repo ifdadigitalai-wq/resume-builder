@@ -68,6 +68,8 @@ Note: The overallScore MUST be calculated exactly based on the weights: keywordS
           content: `JOB DESCRIPTION:\n${jobDescription}\n\nRESUME:\n${resumeText}`,
         },
       ],
+      temperature: 0,
+      seed: 42,
     })
 
     const rawContent = completion.choices[0].message.content

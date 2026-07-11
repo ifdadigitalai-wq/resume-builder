@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowRight, CloudUpload, Sparkles, FilePlus, Download, Target, FolderOpen, Trash2, X } from 'lucide-react';
 import { useUIStore } from '@/store/uiStore';
 import { cleanBullet } from '@/lib/resumeUtils';
+import { ResumePreview } from '@/components/editor/ResumePreview';
 
 export function PrimaryActions() {
   const router = useRouter();
@@ -72,6 +73,82 @@ export function PrimaryActions() {
       });
   }, []);
 
+  const [downloadResumeData, setDownloadResumeData] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (downloadResumeData) {
+      const timer = setTimeout(async () => {
+        try {
+          const html2pdf = (await import('html2pdf.js')).default;
+          const element = document.getElementById('resume-preview-content');
+          if (!element) throw new Error('Preview not found');
+          
+          const clonedElement = element.cloneNode(true) as HTMLElement;
+          clonedElement.style.transform = 'none';
+          clonedElement.style.position = 'relative';
+          clonedElement.style.left = '0';
+          clonedElement.style.top = '0';
+
+          const worker = document.createElement('div');
+          worker.style.position = 'absolute';
+          worker.style.left = '-9999px';
+          worker.style.top = '-9999px';
+          worker.appendChild(clonedElement);
+          document.body.appendChild(worker);
+
+          const fileName = `resume-${downloadResumeData.title || 'export'}-${Date.now()}.pdf`;
+          await html2pdf().set({
+            margin: 0,
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          })
+          .from(clonedElement)
+          .toPdf()
+          .get('pdf')
+          .then((pdf: any) => {
+            const sectionsData = {
+              personal: downloadResumeData.personal || {},
+              summary: downloadResumeData.summary || '',
+              experience: downloadResumeData.experience || [],
+              education: downloadResumeData.education || [],
+              skills: downloadResumeData.skills || [],
+              projects: downloadResumeData.projects || [],
+              certifications: downloadResumeData.certifications || [],
+            };
+            pdf.setProperties({
+              title: downloadResumeData.title || 'Resume',
+              subject: JSON.stringify(sectionsData),
+              keywords: 'resume-builder-data-v1',
+              creator: 'AI Resume Builder'
+            });
+            pdf.save(fileName);
+          });
+
+          document.body.removeChild(worker);
+
+          // Log download event
+          await fetch(`/api/resume/${downloadResumeData.id}/download`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName }),
+          });
+
+          showToast('PDF downloaded successfully!', 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('Download failed', 'error');
+        } finally {
+          setDownloadResumeData(null);
+          setIsDownloading(false);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [downloadResumeData]);
+
   const handleDownload = async () => {
     if (!latestId) {
       showToast('No resumes found to download.', 'error');
@@ -82,148 +159,22 @@ export function PrimaryActions() {
       const res = await fetch(`/api/resume/${latestId}`);
       if (!res.ok) throw new Error();
       const { resume } = await res.json();
-      const sections = resume.sections || {};
-      const personal = sections.personal || {};
-      const summary = sections.summary || '';
-      const experience = sections.experience || [];
-      const education = sections.education || [];
-      const skills = sections.skills || [];
-      const projects = sections.projects || [];
-      const certifications = sections.certifications || [];
       
-      const container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.left = '-9999px';
-      container.style.top = '-9999px';
-      container.id = 'resume-preview-content';
-      document.body.appendChild(container);
+      const sections = resume.sections || {};
+      const parsedResume = {
+        ...resume,
+        personal: sections.personal || {},
+        summary: sections.summary || '',
+        experience: sections.experience || [],
+        education: sections.education || [],
+        skills: sections.skills || [],
+        projects: sections.projects || [],
+        certifications: sections.certifications || [],
+      };
 
-      const experienceHtml = (experience || []).map((exp: any) => `
-        <div style="margin-bottom: 10px;">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;">
-            <span style="color: #0f172a;">${exp.role || ''}</span>
-            <span style="font-style: italic; font-weight: 500; font-size: 10px; color: #64748b; white-space: nowrap; margin-left: 10px;">${exp.startDate || ''} - ${exp.current ? 'Present' : exp.endDate || ''}</span>
-          </div>
-          <p style="font-size: 11px; color: #2563EB; margin: 2px 0 4px 0; font-weight: bold;">${exp.company || ''}</p>
-          <ul style="font-size: 11px; color: #334155; margin: 4px 0 0 15px; padding: 0; list-style-type: disc;">
-            ${(exp.bullets || []).map((b: string) => b ? `<li>${cleanBullet(b)}</li>` : '').join('')}
-          </ul>
-        </div>
-      `).join('');
-
-      const educationHtml = (education || []).map((edu: any) => `
-        <div style="margin-bottom: 10px;">
-          <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold;">
-            <span style="color: #0f172a;">${edu.institution || ''}</span>
-            <span style="font-style: italic; font-weight: 500; font-size: 10px; color: #64748b; white-space: nowrap; margin-left: 10px;">${edu.startDate || ''} - ${edu.endDate || ''}</span>
-          </div>
-          <p style="font-size: 11px; color: #475569; margin: 2px 0;">${edu.degree || ''} ${edu.field ? `in ${edu.field}` : ''} ${edu.cgpa ? `• CGPA: ${edu.cgpa}` : ''}</p>
-        </div>
-      `).join('');
-
-      const skillsHtml = (skills || []).map((g: any) => {
-        if (typeof g === 'string') {
-          return `<span style="font-size: 11px; margin-right: 5px; color: #334155;">${g}</span>`;
-        }
-        return `
-          <div style="font-size: 11px; margin-bottom: 5px; display: flex; align-items: baseline;">
-            <strong style="width: 140px; flex-shrink: 0; color: #1e293b; text-transform: uppercase; font-size: 10px; letter-spacing: 0.05em;">${g.category || 'Skills'}:</strong>
-            <span style="color: #334155;">${(g.skills || []).join(', ')}</span>
-          </div>
-        `;
-      }).join('');
-
-      const projectsHtml = (projects || []).map((p: any) => `
-        <div style="margin-bottom: 10px;">
-          <div style="font-size: 11px; font-weight: bold; color: #0f172a;">
-            ${p.name || ''}
-            ${p.link ? `<span style="font-size: 9px; color: #2563EB; margin-left: 5px; font-weight: normal;">(${p.link})</span>` : ''}
-          </div>
-          <p style="font-size: 10px; color: #2563EB; margin: 2px 0; font-weight: 600;">${(p.techStack || []).join(', ')}</p>
-          <p style="font-size: 11px; color: #334155; margin: 2px 0; line-height: 1.4;">${p.description || ''}</p>
-        </div>
-      `).join('');
-
-      const certsHtml = (certifications || []).map((c: any) => `
-        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px;">
-          <span style="color: #334155;"><strong>${c.name || ''}</strong> ${c.credentialUrl ? `<span style="font-size: 9px; color: #2563EB; margin-left: 5px;">(${c.credentialUrl})</span>` : ''} • <span style="color: #475569;">${c.issuer || ''}</span></span>
-          <span style="font-size: 10px; color: #64748b; white-space: nowrap; margin-left: 10px;">${c.date || ''}</span>
-        </div>
-      `).join('');
-
-      container.innerHTML = `
-        <div style="font-family: 'Inter', Arial, sans-serif; color: #0F172A; padding: 20mm; background: white; width: 210mm; min-height: 297mm; box-sizing: border-box;">
-          <div style="text-align: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 15px;">
-            <h1 style="font-size: 26px; font-weight: bold; margin: 0; color: #0f172a; tracking-tight: -0.02em;">${personal.fullName || resume.title}</h1>
-            <div style="font-size: 10px; color: #64748b; margin-top: 8px; display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap;">
-              ${personal.email ? `<span>${personal.email}</span>` : ''}
-              ${personal.phone ? `<span>•</span><span>${personal.phone}</span>` : ''}
-              ${personal.location ? `<span>•</span><span>${personal.location}</span>` : ''}
-              ${personal.socials?.linkedIn || (personal as any).linkedIn ? `<span>•</span><span>${personal.socials?.linkedIn || (personal as any).linkedIn}</span>` : ''}
-              ${personal.socials?.github || (personal as any).github ? `<span>•</span><span>${personal.socials?.github || (personal as any).github}</span>` : ''}
-            </div>
-          </div>
-          ${summary ? `
-            <div style="margin-bottom: 15px;">
-              <h2 style="font-size: 10px; font-weight: bold; color: #2563EB; text-transform: uppercase; border-bottom: 1px solid rgba(37,99,235,0.3); padding-bottom: 3px; margin-bottom: 8px; letter-spacing: 0.1em;">Professional Summary</h2>
-              <p style="font-size: 11px; line-height: 1.5; margin: 0; color: #334155;">${summary}</p>
-            </div>
-          ` : ''}
-          ${experienceHtml ? `
-            <div style="margin-bottom: 15px;">
-              <h2 style="font-size: 10px; font-weight: bold; color: #2563EB; text-transform: uppercase; border-bottom: 1px solid rgba(37,99,235,0.3); padding-bottom: 3px; margin-bottom: 8px; letter-spacing: 0.1em;">Work Experience</h2>
-              ${experienceHtml}
-            </div>
-          ` : ''}
-          ${educationHtml ? `
-            <div style="margin-bottom: 15px;">
-              <h2 style="font-size: 10px; font-weight: bold; color: #2563EB; text-transform: uppercase; border-bottom: 1px solid rgba(37,99,235,0.3); padding-bottom: 3px; margin-bottom: 8px; letter-spacing: 0.1em;">Education</h2>
-              ${educationHtml}
-            </div>
-          ` : ''}
-          ${skillsHtml ? `
-            <div style="margin-bottom: 15px;">
-              <h2 style="font-size: 10px; font-weight: bold; color: #2563EB; text-transform: uppercase; border-bottom: 1px solid rgba(37,99,235,0.3); padding-bottom: 3px; margin-bottom: 8px; letter-spacing: 0.1em;">Technical Skills</h2>
-              ${skillsHtml}
-            </div>
-          ` : ''}
-          ${projectsHtml ? `
-            <div style="margin-bottom: 15px;">
-              <h2 style="font-size: 10px; font-weight: bold; color: #2563EB; text-transform: uppercase; border-bottom: 1px solid rgba(37,99,235,0.3); padding-bottom: 3px; margin-bottom: 8px; letter-spacing: 0.1em;">Projects</h2>
-              ${projectsHtml}
-            </div>
-          ` : ''}
-          ${certsHtml ? `
-            <div style="margin-bottom: 15px;">
-              <h2 style="font-size: 10px; font-weight: bold; color: #2563EB; text-transform: uppercase; border-bottom: 1px solid rgba(37,99,235,0.3); padding-bottom: 3px; margin-bottom: 8px; letter-spacing: 0.1em;">Certifications</h2>
-              ${certsHtml}
-            </div>
-          ` : ''}
-        </div>
-      `;
-
-      const html2pdf = (await import('html2pdf.js')).default;
-      await html2pdf().set({
-        margin: 0,
-        filename: `resume-${resume.title || 'export'}.pdf`,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      }).from(container).save();
-
-      document.body.removeChild(container);
-
-      // Log download event
-      await fetch(`/api/resume/${latestId}/download`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: `resume-${resume.title}.pdf` }),
-      });
-
-      showToast('PDF downloaded successfully!', 'success');
+      setDownloadResumeData(parsedResume);
     } catch {
       showToast('Failed to download resume. Please try from editor.', 'error');
-    } finally {
       setIsDownloading(false);
     }
   };
@@ -381,6 +332,11 @@ export function PrimaryActions() {
           </div>
         </div>,
         document.body
+      )}
+      {downloadResumeData && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '794px' }}>
+          <ResumePreview resumeData={downloadResumeData} />
+        </div>
       )}
     </>
   );

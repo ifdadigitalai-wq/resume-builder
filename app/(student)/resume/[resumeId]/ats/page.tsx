@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import { ATSScoreOverview } from '@/components/ats/ATSScoreOverview';
 import { FormattingCard } from '@/components/ats/FormattingCard';
 import { KeywordMatchCard } from '@/components/ats/KeywordMatchCard';
@@ -21,6 +21,8 @@ import { Sparkles, ArrowRight, Loader2, Briefcase, History, ChevronDown, Check }
 export default function ATSPage() {
   const router = useRouter();
   const { resumeId } = useParams<{ resumeId: string }>();
+  const searchParams = useSearchParams();
+  const jobId = searchParams.get('jobId');
   useResumeSync(resumeId);
   const { result, isAnalyzing, analyze } = useATSAnalysis();
   const [jobDescription, setJobDescription] = useState('');
@@ -34,6 +36,7 @@ export default function ATSPage() {
 
   // Job description tracker & picker state
   const [officialJobs, setOfficialJobs] = useState<any[]>([]);
+  const [publicJobs, setPublicJobs] = useState<any[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -65,15 +68,38 @@ export default function ATSPage() {
           const lastAnalysis = (resume as any).atsAnalyses?.[0];
           if (lastAnalysis) {
             setATSResult(lastAnalysis);
-            setATSJobDescription(lastAnalysis.jobDescription || '');
-            setJobDescription(lastAnalysis.jobDescription || '');
-            if (lastAnalysis.jobDescription) {
-              addHistory(lastAnalysis.jobDescription);
+            // Only overwrite active description if we are not loading a specific jobId from Jobs page
+            if (!jobId) {
+              setATSJobDescription(lastAnalysis.jobDescription || '');
+              setJobDescription(lastAnalysis.jobDescription || '');
+              if (lastAnalysis.jobDescription) {
+                addHistory(lastAnalysis.jobDescription);
+              }
             }
           }
         }
       });
-  }, [resumeId, setResume, setATSResult, setATSJobDescription, addHistory]);
+  }, [resumeId, jobId, setResume, setATSResult, setATSJobDescription, addHistory]);
+
+  // Load target jobId details if present
+  useEffect(() => {
+    if (!jobId) return;
+    fetch(`/api/jobs/detail?id=${jobId}`)
+      .then((r) => r.json())
+      .then(({ job }) => {
+        if (job) {
+          setJobDescription(job.description);
+          setATSJobDescription(job.description);
+          useATSStore.getState().setActiveTitle(`${job.title} @ ${job.company}`);
+          addHistory(job.description);
+          showToast(`Prefilled details for ${job.title}`, 'success');
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load job details in ATS audit:', err);
+      });
+  }, [jobId, setATSJobDescription, addHistory, showToast]);
+
 
   useEffect(() => {
     fetch('/api/officer/jobs')
@@ -82,7 +108,15 @@ export default function ATSPage() {
         if (res.data) setOfficialJobs(res.data);
       })
       .catch(() => {});
+
+    fetch('/api/jobs/search?limit=10')
+      .then((r) => r.json())
+      .then((res) => {
+        if (res.jobs) setPublicJobs(res.jobs);
+      })
+      .catch(() => {});
   }, []);
+
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -277,6 +311,41 @@ export default function ATSPage() {
                           Campus Placement Jobs
                         </div>
                         {officialJobs.map((job) => {
+                          const isActive = jobDescription === job.description;
+                          return (
+                            <button
+                              key={job.id}
+                              onClick={() => {
+                                setJobDescription(job.description);
+                                addHistory(job.description);
+                                useATSStore.getState().setActiveTitle(`${job.title} @ ${job.company}`);
+                                setShowDropdown(false);
+                                showToast(`Selected ${job.title}`, 'success');
+                              }}
+                              className={`w-full text-left px-3 py-2 text-xs transition-colors flex items-start justify-between gap-1.5 hover:bg-slate-50 ${
+                                isActive ? 'bg-blue-50/50 text-blue-700 font-medium' : 'text-slate-700'
+                              }`}
+                            >
+                              <div className="truncate flex-1">
+                                <p className="font-semibold truncate text-slate-800">{job.title}</p>
+                                <p className="text-[10px] text-slate-400 truncate">
+                                  {job.company} {job.location ? `• ${job.location}` : ''}
+                                </p>
+                              </div>
+                              {isActive && <Check className="h-3.5 w-3.5 text-blue-600 shrink-0 mt-0.5" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* Section: Public Search Jobs */}
+                    {publicJobs.length > 0 && (
+                      <div className="border-b border-slate-100 pb-1.5 mb-1.5 mt-1.5">
+                        <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          Scraped Public Jobs
+                        </div>
+                        {publicJobs.map((job) => {
                           const isActive = jobDescription === job.description;
                           return (
                             <button

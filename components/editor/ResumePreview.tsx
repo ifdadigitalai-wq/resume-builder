@@ -4,8 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 import { cleanBullet } from '@/lib/resumeUtils';
 
-export function ResumePreview() {
-  const resume = useResumeStore((s) => s.resume);
+import type { ResumeData } from '@/types/resume';
+
+interface ResumePreviewProps {
+  resumeData?: ResumeData;
+}
+
+export function ResumePreview({ resumeData }: ResumePreviewProps = {}) {
+  const storeResume = useResumeStore((s) => s.resume);
+  const resume = resumeData ?? storeResume;
   const { personal, education, skills, projects, experience, certifications, summary, layout } = resume;
 
   const p = personal ?? { fullName: '', email: '', phone: '', location: '' };
@@ -22,7 +29,7 @@ export function ResumePreview() {
   const containerRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  const [contentHeight, setContentHeight] = useState(1123);
+  const [contentHeight, setContentHeight] = useState(1120);
 
   useEffect(() => {
     const handleResize = () => {
@@ -87,21 +94,21 @@ export function ResumePreview() {
 
   // Margin/spacing config
   const spacingStyles = {
-    compact: { mb: 'mb-3', space: 'space-y-2', gap: 'gap-y-1.5' },
-    normal: { mb: 'mb-4', space: 'space-y-3.5', gap: 'gap-y-2.5' },
-    loose: { mb: 'mb-6', space: 'space-y-5', gap: 'gap-y-4' },
+    compact: { mb: 'mb-2', space: 'space-y-1.5', gap: 'gap-y-1' },
+    normal: { mb: 'mb-3', space: 'space-y-2.5', gap: 'gap-y-2' },
+    loose: { mb: 'mb-4', space: 'space-y-3.5', gap: 'gap-y-2.5' },
   };
   const spacing = spacingStyles[style.spacing] ?? spacingStyles.normal;
 
   // Real margin padding for the printable element
   const spacingPaddings = {
-    compact: '36px',
-    normal: '54px',
-    loose: '72px',
+    compact: '32px',
+    normal: '48px',
+    loose: '64px',
   };
   const paddingVal = spacingPaddings[style.spacing] ?? spacingPaddings.normal;
 
-  const canvasHeight = Math.max(contentHeight, 1123);
+  const canvasHeight = Math.max(contentHeight, 1120);
 
   return (
     <div 
@@ -130,7 +137,7 @@ export function ResumePreview() {
           className={`bg-white text-[#0F172A] ${fontClass} ${lhClass} absolute left-0 top-0 origin-top-left`}
           style={{
             width: '794px',
-            minHeight: '1123px',
+            minHeight: '1120px',
             padding: paddingVal,
             transform: `scale(${scale})`,
             boxSizing: 'border-box',
@@ -161,7 +168,7 @@ export function ResumePreview() {
           {summary && (
             <section className={spacing.mb}>
               <h2 
-                className={`${size.label} font-bold uppercase tracking-widest border-b pb-1 mb-2.5`}
+                className={`${size.label} font-bold uppercase tracking-widest border-b pb-0.5 mb-2`}
                 style={{ color: style.themeColor, borderColor: `${style.themeColor}55` }}
               >
                 Professional Summary
@@ -174,7 +181,7 @@ export function ResumePreview() {
           {experience && experience.length > 0 && (
             <section className={spacing.mb}>
               <h2 
-                className={`${size.label} font-bold uppercase tracking-widest border-b pb-1 mb-2.5`}
+                className={`${size.label} font-bold uppercase tracking-widest border-b pb-0.5 mb-2`}
                 style={{ color: style.themeColor, borderColor: `${style.themeColor}55` }}
               >
                 Experience
@@ -204,7 +211,7 @@ export function ResumePreview() {
           {education && education.length > 0 && (
             <section className={spacing.mb}>
               <h2 
-                className={`${size.label} font-bold uppercase tracking-widest border-b pb-1 mb-2.5`}
+                className={`${size.label} font-bold uppercase tracking-widest border-b pb-0.5 mb-2`}
                 style={{ color: style.themeColor, borderColor: `${style.themeColor}55` }}
               >
                 Education
@@ -237,7 +244,7 @@ export function ResumePreview() {
           {skills && skills.length > 0 && (
             <section className={spacing.mb}>
               <h2 
-                className={`${size.label} font-bold uppercase tracking-widest border-b pb-1 mb-2.5`}
+                className={`${size.label} font-bold uppercase tracking-widest border-b pb-0.5 mb-2`}
                 style={{ color: style.themeColor, borderColor: `${style.themeColor}55` }}
               >
                 Technical Skills
@@ -263,7 +270,7 @@ export function ResumePreview() {
           {projects && projects.length > 0 && (
             <section className={spacing.mb}>
               <h2 
-                className={`${size.label} font-bold uppercase tracking-widest border-b pb-1 mb-2.5`}
+                className={`${size.label} font-bold uppercase tracking-widest border-b pb-0.5 mb-2`}
                 style={{ color: style.themeColor, borderColor: `${style.themeColor}55` }}
               >
                 Projects
@@ -300,7 +307,7 @@ export function ResumePreview() {
           {certifications && certifications.length > 0 && (
             <section className="mb-2">
               <h2 
-                className={`${size.label} font-bold uppercase tracking-widest border-b pb-1 mb-2.5`}
+                className={`${size.label} font-bold uppercase tracking-widest border-b pb-0.5 mb-2`}
                 style={{ color: style.themeColor, borderColor: `${style.themeColor}55` }}
               >
                 Certifications

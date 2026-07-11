@@ -1,7 +1,7 @@
 'use client';
 
 import { useResumeStore } from '@/store/resumeStore';
-import { Type, AlignLeft, Paintbrush, Move } from 'lucide-react';
+import { Type, AlignLeft, Paintbrush, Move, Sparkles, ArrowRight } from 'lucide-react';
 
 const COLORS = [
   { name: 'Blue Accent', value: '#2563EB' },

@@ -17,6 +17,7 @@ import {
 import Link from 'next/link';
 import { Badge } from '@/components/ui/Badge';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { ResumePreview } from '@/components/editor/ResumePreview';
 
 interface ResumeListItem {
   id: string;
@@ -58,6 +59,88 @@ export default function DownloadsPage() {
     fetchResumes();
   }, []);
 
+  const [downloadResumeData, setDownloadResumeData] = useState<any | null>(null);
+  const [activeQueueId, setActiveQueueId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (downloadResumeData && activeQueueId) {
+      const timer = setTimeout(async () => {
+        const queueId = activeQueueId;
+        try {
+          const html2pdf = (await import('html2pdf.js')).default;
+          const element = document.getElementById('resume-preview-content');
+          if (!element) throw new Error('Preview not found');
+
+          const clonedElement = element.cloneNode(true) as HTMLElement;
+          clonedElement.style.transform = 'none';
+          clonedElement.style.position = 'relative';
+          clonedElement.style.left = '0';
+          clonedElement.style.top = '0';
+
+          const worker = document.createElement('div');
+          worker.style.position = 'absolute';
+          worker.style.left = '-9999px';
+          worker.style.top = '-9999px';
+          worker.appendChild(clonedElement);
+          document.body.appendChild(worker);
+
+          const safeTitle = downloadResumeData.title ? downloadResumeData.title.replace(/\s+/g, '_') : 'export';
+          const fileName = `${safeTitle}_Resume.pdf`;
+
+          setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, progress: 70 } : item));
+
+          await html2pdf().set({
+            margin: 0,
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          })
+          .from(clonedElement)
+          .toPdf()
+          .get('pdf')
+          .then((pdf: any) => {
+            const sectionsData = {
+              personal: downloadResumeData.personal || {},
+              summary: downloadResumeData.summary || '',
+              experience: downloadResumeData.experience || [],
+              education: downloadResumeData.education || [],
+              skills: downloadResumeData.skills || [],
+              projects: downloadResumeData.projects || [],
+              certifications: downloadResumeData.certifications || [],
+            };
+            pdf.setProperties({
+              title: downloadResumeData.title || 'Resume',
+              subject: JSON.stringify(sectionsData),
+              keywords: 'resume-builder-data-v1',
+              creator: 'AI Resume Builder'
+            });
+            pdf.save(fileName);
+          });
+
+          document.body.removeChild(worker);
+
+          // Log download event
+          await fetch(`/api/resume/${downloadResumeData.id}/download`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fileName }),
+          });
+
+          setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, progress: 100, status: 'Ready' } : item));
+        } catch (err) {
+          console.error(err);
+          setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, status: 'Failed' } : item));
+        } finally {
+          setDownloadResumeData(null);
+          setActiveQueueId(null);
+        }
+      }, 500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [downloadResumeData, activeQueueId]);
+
   const handleDownloadTrigger = async (id: string, title: string) => {
     // 1. Add to the local download queue
     const queueId = `${id}-${Date.now()}`;
@@ -69,35 +152,27 @@ export default function DownloadsPage() {
     };
     setDownloadQueue(prev => [newQueueItem, ...prev]);
 
-    // 2. Simulate generating steps
-    setTimeout(() => {
-      setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, progress: 45, status: 'Generating' } : item));
-    }, 800);
-
-    setTimeout(() => {
-      setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, progress: 80, status: 'Generating' } : item));
-    }, 1500);
-
     try {
-      // 3. Log download action to database
-      await fetch(`/api/resume/${id}/download`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fileName: `${title.replace(/\s+/g, '_')}_Resume.pdf` })
-      });
+      // Fetch full resume details
+      const res = await fetch(`/api/resume/${id}`);
+      if (!res.ok) throw new Error();
+      const { resume } = await res.json();
 
-      // 4. Trigger browser file download via GET route
-      const link = document.createElement('a');
-      link.href = `/api/resume/${id}/download`;
-      link.setAttribute('download', `${title.replace(/\s+/g, '_')}_Resume.pdf`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      const sections = resume.sections || {};
+      const parsedResume = {
+        ...resume,
+        personal: sections.personal || {},
+        summary: sections.summary || '',
+        experience: sections.experience || [],
+        education: sections.education || [],
+        skills: sections.skills || [],
+        projects: sections.projects || [],
+        certifications: sections.certifications || [],
+      };
 
-      // 5. Update queue item to ready
-      setTimeout(() => {
-        setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, progress: 100, status: 'Ready' } : item));
-      }, 2000);
+      setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, progress: 40, status: 'Generating' } : item));
+      setActiveQueueId(queueId);
+      setDownloadResumeData(parsedResume);
     } catch {
       setDownloadQueue(prev => prev.map(item => item.id === queueId ? { ...item, status: 'Failed' } : item));
     }
@@ -304,6 +379,11 @@ export default function DownloadsPage() {
           </div>
         </div>
       </div>
+      {downloadResumeData && (
+        <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '794px' }}>
+          <ResumePreview resumeData={downloadResumeData} />
+        </div>
+      )}
     </div>
   );
 }

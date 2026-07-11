@@ -217,6 +217,15 @@ export function TopBar({ title, resumeId, className }: TopBarProps) {
           </span>
         </div>
         <div className="flex items-center gap-3">
+          {/* Modern CV Redirect Button */}
+          <button
+            onClick={() => router.push('/resume/multi-course')}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#0F1E36] hover:bg-[#15294A] border border-blue-950 text-white rounded-lg text-xs font-bold shadow-sm transition-all hover:scale-105 active:scale-95 shrink-0"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-blue-400" />
+            <span>Modern CV</span>
+          </button>
+
           {/* Notifications Bell for Editor Mode */}
           <div className="relative" ref={dropdownRef}>
             <button

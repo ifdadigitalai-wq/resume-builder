@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FileText, BarChart2, Target, Download } from 'lucide-react';
+import { LayoutDashboard, FileText, BarChart2, Briefcase, Target, Download } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export function MobileTabBar() {
@@ -31,6 +31,7 @@ export function MobileTabBar() {
     { href: '/dashboard', label: 'Home', icon: LayoutDashboard },
     { href: resumeEditorHref, label: 'Resume', icon: FileText },
     { href: resumeAtsHref, label: 'ATS', icon: BarChart2, disabled: !latestResumeId },
+    { href: '/jobs', label: 'Jobs', icon: Briefcase },
     { href: '/placement-readiness', label: 'Readiness', icon: Target },
     { href: '/downloads', label: 'Files', icon: Download },
   ];

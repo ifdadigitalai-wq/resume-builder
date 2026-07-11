@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/Badge';
 import { WizardShell } from '@/components/wizard/WizardShell';
 import { SUGGESTED_SKILLS } from '@/lib/constants';
 import { useUIStore } from '@/store/uiStore';
+import { Sparkles, ArrowRight } from 'lucide-react';
 
 const titles = ['Personal Details', 'Education', 'Skills', 'Projects', 'Experience', 'Certifications', 'Generate'];
 
@@ -107,7 +108,29 @@ export default function CreateResumePage() {
   const content = useMemo(() => {
     if (step === 1) {
       return (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          <div className="sm:col-span-2 relative overflow-hidden rounded-xl border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4.5 shadow-sm mb-2">
+            <div className="flex items-start gap-3.5">
+              <div className="p-2 rounded-xl bg-blue-600 text-white shrink-0 shadow-md shadow-blue-500/20">
+                <Sparkles className="h-5 w-5 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-extrabold text-[#10233F] flex items-center gap-1.5">
+                  Introducing Specialty Themes!
+                </h4>
+                <p className="text-xs text-[#45607F] leading-relaxed">
+                  Looking for profession-specific templates? Create a theme-aware resume with specialized skills progress bars, tool badges, and custom timelines for 14 different course fields (Accounting, SAP, AI, Data Analytics, etc.).
+                </p>
+                <button
+                  type="button"
+                  onClick={() => router.push('/resume/multi-course')}
+                  className="mt-2.5 inline-flex items-center gap-1 text-xs font-black text-blue-600 hover:text-blue-700 transition"
+                >
+                  Launch Specialty Builder <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
           <Input label="Full Name" value={personal.fullName} onChange={(e) => setPersonal(p => ({ ...p, fullName: e.target.value }))} error={missingName ? 'Full name is required' : undefined} placeholder="e.g. Arjun Sharma" />
           <Input label="Email" value={personal.email} onChange={(e) => setPersonal(p => ({ ...p, email: e.target.value }))} placeholder="e.g. arjun@college.edu" />
           <Input label="Phone" value={personal.phone} onChange={(e) => setPersonal(p => ({ ...p, phone: e.target.value }))} placeholder="e.g. +91 98765 43210" />

@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   FileText,
   BarChart2,
+  Briefcase,
   Target,
   Download,
   Settings,
@@ -85,6 +86,11 @@ export function StudentSidebar() {
       label: 'ATS Analysis',
       icon: BarChart2,
       disabled: !latestResumeId,
+    },
+    {
+      href: '/jobs',
+      label: 'Job Search',
+      icon: Briefcase,
     },
     {
       href: '/placement-readiness',
