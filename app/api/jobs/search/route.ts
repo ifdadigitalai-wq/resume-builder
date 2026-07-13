@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const { searchParams } = new URL(req.url);
-    const query = searchParams.get('query') || undefined;
+    let query = searchParams.get('query') || undefined;
     const location = searchParams.get('location') || undefined;
     const experience = searchParams.get('experience') || undefined;
     const workmode = searchParams.get('workmode') || undefined;
@@ -29,6 +29,21 @@ export async function GET(req: NextRequest) {
         sections: true,
       },
     });
+
+    if (!query) {
+      const user = await db.user.findUnique({
+        where: { id: session.id },
+        select: { course: true },
+      });
+      if (user?.course) {
+        query = user.course;
+      } else if (latestResume && latestResume.sections) {
+        const sections = latestResume.sections as any;
+        if (sections.education?.[0]?.field) {
+          query = sections.education[0].field;
+        }
+      }
+    }
 
     let studentSkills: string[] = [];
     if (latestResume && latestResume.sections) {

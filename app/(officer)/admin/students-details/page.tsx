@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Eye, Search, X, Loader } from 'lucide-react';
+import { Modal } from '@/components/ui/Modal';
 
 export default function StudentsTablePage() {
   const [search, setSearch] = useState('');
@@ -218,38 +219,30 @@ export default function StudentsTablePage() {
       )}
 
       {/* MODAL */}
-      {selectedStudent && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl w-[400px] relative max-h-[80vh] overflow-y-auto">
-            <button
-              onClick={() => setSelectedStudent(null)}
-              className="absolute right-3 top-3 hover:bg-gray-100 p-1 rounded"
-            >
-              <X />
-            </button>
-
-            <h2 className="text-lg font-semibold mb-4">
-              Student Details
-            </h2>
-
-            <div className="space-y-3 text-sm">
-              <p><b>Name:</b> {selectedStudent.name}</p>
-              <p><b>Email:</b> {selectedStudent.email}</p>
-              <p><b>Student ID:</b> {selectedStudent.studentId || 'N/A'}</p>
-              <p><b>Course:</b> {selectedStudent.course || 'N/A'}</p>
-              <p><b>Branch:</b> {selectedStudent.batch || 'N/A'}</p>
-              <p><b>ATS Score:</b> {selectedStudent.latestAtsScore ?? 'Not available'}%</p>
-              <p><b>Resume Count:</b> {selectedStudent.resumeCount}</p>
-              <p><b>Profile Status:</b> {selectedStudent.resumeCount > 0 ? 'Complete' : 'Incomplete'}</p>
-              <p><b>Placement Status:</b> {selectedStudent.placementStatus}</p>
-              <p><b>Last Active:</b> {new Date(selectedStudent.lastActive).toLocaleDateString()}</p>
-              {selectedStudent.skills && selectedStudent.skills.length > 0 && (
-                <p><b>Skills:</b> {selectedStudent.skills.join(', ')}</p>
-              )}
-            </div>
+      <Modal
+        open={!!selectedStudent}
+        onClose={() => setSelectedStudent(null)}
+        title="Student Details"
+        className="max-w-[400px]"
+      >
+        {selectedStudent && (
+          <div className="space-y-3 text-sm">
+            <p><b>Name:</b> {selectedStudent.name}</p>
+            <p><b>Email:</b> {selectedStudent.email}</p>
+            <p><b>Student ID:</b> {selectedStudent.studentId || 'N/A'}</p>
+            <p><b>Course:</b> {selectedStudent.course || 'N/A'}</p>
+            <p><b>Branch:</b> {selectedStudent.batch || 'N/A'}</p>
+            <p><b>ATS Score:</b> {selectedStudent.latestAtsScore ?? 'Not available'}%</p>
+            <p><b>Resume Count:</b> {selectedStudent.resumeCount}</p>
+            <p><b>Profile Status:</b> {selectedStudent.resumeCount > 0 ? 'Complete' : 'Incomplete'}</p>
+            <p><b>Placement Status:</b> {selectedStudent.placementStatus}</p>
+            <p><b>Last Active:</b> {new Date(selectedStudent.lastActive).toLocaleDateString()}</p>
+            {selectedStudent.skills && selectedStudent.skills.length > 0 && (
+              <p><b>Skills:</b> {selectedStudent.skills.join(', ')}</p>
+            )}
           </div>
-        </div>
-      )}
+        )}
+      </Modal>
     </div>
   );
 }

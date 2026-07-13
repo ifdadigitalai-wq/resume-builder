@@ -4,47 +4,46 @@ import OpenAI from 'openai'
 
 const PROMPTS: Record<string, (input: string, ctx: any) => string> = {
   enhance_bullet: (input, ctx) =>
-    `You are a professional resume writer. Improve this resume bullet point to be more impactful, quantified, and ATS-friendly. Use strong action verbs. Keep it under 15 words. Return only the improved bullet, no explanation.
-Person: ${ctx.name}, Role: ${ctx.role}
+    `You are a professional resume writer. Improve this resume bullet point to be more impactful, quantified, and ATS-friendly. Base it strictly on the candidate's field/course (${ctx.course || 'their field'}), target role (${ctx.role || 'their target role'}), and existing expertise. Use strong action verbs. Keep it under 15 words. Return only the improved bullet, no explanation.
+Person: ${ctx.name}, Role: ${ctx.role}, Field/Course: ${ctx.course}
 Original: ${input}`,
 
   enhance_bullets: (input, ctx) =>
-    `You are a professional resume writer. Improve this resume bullet point to be more impactful, quantified, and ATS-friendly. Use strong action verbs. Keep it under 15 words. Return only the improved bullet, no explanation.
-Person: ${ctx.name}, Role: ${ctx.role}
+    `You are a professional resume writer. Improve this resume bullet point to be more impactful, quantified, and ATS-friendly. Base it strictly on the candidate's field/course (${ctx.course || 'their field'}), target role (${ctx.role || 'their target role'}), and existing expertise. Use strong action verbs. Keep it under 15 words. Return only the improved bullet, no explanation.
+Person: ${ctx.name}, Role: ${ctx.role}, Field/Course: ${ctx.course}
 Original: ${input}`,
 
   generate_summary: (input, ctx) =>
-    `Write a professional resume summary (3-4 sentences, max 80 words) for this candidate. Make it ATS-optimized and compelling.
-Name: ${ctx.name}, Skills: ${ctx.skills}
-Context from user: ${input}
+    `Write a professional resume summary (3-4 sentences, max 80 words) for this candidate. Make it ATS-optimized and compelling. The summary must be highly specific to their academic course domain (${ctx.course || 'their course'}) and target role (${ctx.role || 'their target role'}). Base it strictly on their actual skills: ${ctx.skills || 'None'} and the context provided: "${input}". Do NOT pre-suppose or hallucinate unrelated technologies.
+Name: ${ctx.name}, Skills: ${ctx.skills}, Course/Domain: ${ctx.course}, Target Role: ${ctx.role}
 Return only the summary text.`,
 
   enhance_summary: (input, ctx) =>
-    `Write a professional resume summary (3-4 sentences, max 80 words) for this candidate. Make it ATS-optimized and compelling.
-Name: ${ctx.name}, Skills: ${ctx.skills}
-Context from user: ${input}
+    `Write a professional resume summary (3-4 sentences, max 80 words) for this candidate. Make it ATS-optimized and compelling. The summary must be highly specific to their academic course domain (${ctx.course || 'their course'}) and target role (${ctx.role || 'their target role'}). Base it strictly on their actual skills: ${ctx.skills || 'None'} and the context provided: "${input}". Do NOT pre-suppose or hallucinate unrelated technologies.
+Name: ${ctx.name}, Skills: ${ctx.skills}, Course/Domain: ${ctx.course}, Target Role: ${ctx.role}
 Return only the summary text.`,
 
   improve_description: (input, ctx) =>
-    `Improve this project/experience description for a resume. Make it concise, impactful, and highlight technical skills.
+    `Improve this project/experience description for a resume. Make it concise, impactful, and highlight technical skills relevant to the candidate's field (${ctx.course || 'their field'}).
 Original: ${input}
 Return only the improved text.`,
 
   suggest_skills: (input, ctx) =>
-    `Based on this job role context, suggest relevant skills to add to a resume.
+    `Analyze the candidate's course domain (${ctx.course || 'their course'}), target role (${ctx.role || 'their target role'}), and profile. Suggest highly relevant skills they should add to their resume to stand out in their specific field.
 Candidate's existing skills: ${ctx.skills || 'None'}
-Return as a comma-separated list of skills only. Do NOT suggest any skills that are already present in the candidate's existing skills list. Keep suggestions strictly relevant to the role context: "${input}".`,
+Course/Domain: ${ctx.course}
+Return as a comma-separated list of skills only. Do NOT suggest any skills that are already present in their existing skills list. Keep suggestions strictly relevant to their field and expertise. No explanation.`,
 
   fix_ats: (input, ctx) =>
     `You are an ATS optimization expert. Fix this specific ATS compatibility issue in the resume. 
-Context: ${ctx.name}, Role: ${ctx.role}, Skills: ${ctx.skills}
+Context: ${ctx.name}, Role: ${ctx.role}, Skills: ${ctx.skills}, Course/Domain: ${ctx.course}
 Issue to fix: ${input}
 Return only the optimized text/bullet replacement without explanation.`,
 
   suggest_certifications: (input, ctx) =>
-    `Suggest 3-4 professional and industry-standard certifications for a candidate with role/skills context: "${input}". 
+    `Suggest 3-4 professional and industry-standard certifications suitable for a candidate in the course field "${ctx.course || input}" with skills "${ctx.skills || 'None'}". 
 Candidate's existing certifications: ${ctx.certifications || 'None'}
-Return a comma-separated list of certification names only. Do NOT suggest any certifications that are already present in the candidate's existing certifications list. No explanation.`,
+Return a comma-separated list of certification names only. Do NOT suggest any certifications that are already present in their existing list. No explanation.`,
 
   suggest_highlights: (input, ctx) =>
     `Based on the education/institution/field context: "${input}", suggest 2-3 key academic highlights, coursework, or project achievements that stand out on a resume. 
@@ -55,13 +54,13 @@ Return as a short list of bullets (maximum 15 words per bullet). No other explan
 Return the formatted categories and skills only, in a clean, concise list.`,
 
   suggest_title: (input, ctx) =>
-    `Suggest 3 professional, short, and punchy resume headlines or target role titles (e.g. "Full Stack Engineer | React & Node.js") for a candidate with this profile context: "${input}".
+    `Suggest 3 professional, short, and punchy resume headlines or target role titles (e.g. "Full Stack Engineer | React & Node.js") for a candidate with this profile context: "${input}" and field "${ctx.course || 'their field'}".
 Candidate's current target roles/titles: ${ctx.role || 'None'}
 Return only the list of titles separated by pipe | symbol. Do NOT suggest any title that is already present in the candidate's current titles. No explanation.`,
 
   chat: (input, ctx) =>
     `You are an expert AI resume writing assistant. Assist the candidate with their resume editing query.
-Candidate context: Name: ${ctx.name || 'Candidate'}, Role: ${ctx.role || 'Software Engineer'}, Skills: ${ctx.skills || 'Not specified'}, Certifications: ${ctx.certifications || 'Not specified'}
+Candidate context: Name: ${ctx.name || 'Candidate'}, Role: ${ctx.role || 'Software Engineer'}, Skills: ${ctx.skills || 'Not specified'}, Course/Domain: ${ctx.course || 'Not specified'}, Certifications: ${ctx.certifications || 'Not specified'}
 Candidate query: "${input}"
 Provide a helpful, professional, and direct response or recommended resume copy without introductory filler.`,
 }

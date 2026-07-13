@@ -258,7 +258,7 @@ export default function OfficerDashboardPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">College Email</label>
+            <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Student Email</label>
             <Input
               type="email"
               required
@@ -296,7 +296,7 @@ export default function OfficerDashboardPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Course Name</label>
+              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider">Course Category</label>
               <select
                 value={studentBatch}
                 onChange={(e) => setStudentBatch(e.target.value)}
@@ -337,7 +337,7 @@ export default function OfficerDashboardPage() {
             <Button type="button" variant="ghost" onClick={() => setShowAddModal(false)}>
               Cancel
             </Button>
-            <Button type="submit" loading={formLoading}>
+            <Button type="submit" loading={formLoading} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-1.5 transition-colors">
               Create Student
             </Button>
           </div>

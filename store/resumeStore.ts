@@ -39,6 +39,7 @@ interface ResumeState {
   setIsSaving: (v: boolean) => void
   setValidationError: (field: string, error: string | null) => void
   updateLayout: (data: Partial<ResumeLayoutOptions>) => void
+  reset: () => void
 }
 
 const defaultResume: ResumeData = {
@@ -101,6 +102,41 @@ export const useResumeStore = create<ResumeState>()(
               spacing: resume?.layout?.spacing ?? defaultResume.layout!.spacing,
             }
           };
+
+          // Assign unique IDs & standardise keys to items that might lack them (e.g. from seed data or raw json DB loads)
+          s.resume.experience = (s.resume.experience || []).map((e: any) => ({
+            id: e.id || uuid(),
+            company: e.company || '',
+            role: e.role || e.position || '',
+            startDate: e.startDate || '',
+            endDate: e.endDate || '',
+            current: e.current || false,
+            bullets: e.bullets || (e.description ? [e.description] : ['']),
+          }));
+
+          s.resume.education = (s.resume.education || []).map((edu: any) => ({
+            id: edu.id || uuid(),
+            institution: edu.institution || '',
+            degree: edu.degree || '',
+            field: edu.field || edu.fieldOfStudy || '',
+            startDate: edu.startDate || '',
+            endDate: edu.endDate || '',
+          }));
+
+          s.resume.projects = (s.resume.projects || []).map((p: any) => ({
+            id: p.id || uuid(),
+            name: p.name || '',
+            description: p.description || '',
+            techStack: p.techStack || [],
+          }));
+
+          s.resume.certifications = (s.resume.certifications || []).map((c: any) => ({
+            id: c.id || uuid(),
+            name: c.name || '',
+            issuer: c.issuer || '',
+            date: c.date || c.issueDate || '',
+          }));
+
           // Expose linkedIn/github/portfolio flat on personal for old components compatibility
           const p = s.resume.personal;
           const soc = p.socials ?? {};
@@ -224,6 +260,29 @@ export const useResumeStore = create<ResumeState>()(
           }
           Object.assign(s.resume.layout, data);
           s.isDirty = true;
+        }),
+        reset: () => setWithComp((s) => {
+          s.resume = {
+            title: 'My Resume',
+            status: 'DRAFT',
+            completionScore: 0,
+            personal: { fullName: '', email: '', phone: '', location: '', socials: { linkedIn: '', github: '', portfolio: '' } },
+            summary: '',
+            experience: [],
+            education: [],
+            skills: [],
+            projects: [],
+            certifications: [],
+            layout: {
+              themeColor: '#2563EB',
+              fontSize: 'md',
+              fontFamily: 'sans',
+              lineHeight: 'normal',
+              spacing: 'normal',
+            }
+          };
+          s.isDirty = false;
+          s.validationErrors = {};
         }),
       };
     }),

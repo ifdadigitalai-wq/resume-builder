@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { LoadingState } from '@/components/ui/LoadingState';
@@ -27,6 +27,7 @@ import Link from 'next/link';
 export default function JobDetailPage() {
   const router = useRouter();
   const { id } = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const showToast = useUIStore((s) => s.showToast);
 
   const [job, setJob] = useState<Job | null>(null);
@@ -58,7 +59,47 @@ export default function JobDetailPage() {
         setJob(data.job || null);
       } catch (err: any) {
         console.error(err);
-        setErrorJob(err.message || 'Failed to load details.');
+        const qTitle = searchParams.get('title');
+        const qCompany = searchParams.get('company');
+        
+        if (qTitle && qCompany) {
+          const qLocation = searchParams.get('location') || 'Remote';
+          const qSkills = searchParams.get('skills')?.split(',').filter(Boolean) || [];
+          const qApplyUrl = searchParams.get('applyUrl') || '';
+          const qExperience = searchParams.get('experience') || '1-3 years';
+          const qSalary = searchParams.get('salary') || 'Competitive Salary';
+          const qSource = searchParams.get('source') || 'Public Listing';
+
+          const fallbackJob: Job = {
+            id,
+            title: qTitle,
+            company: qCompany,
+            location: qLocation,
+            description: `We are looking for a qualified ${qTitle} to join our team at ${qCompany} in ${qLocation}.
+
+Key Responsibilities:
+- Execute daily tasks and objectives related to ${qTitle} operations.
+- Collaborate with cross-functional teams to deliver professional results.
+- Maintain quality control, documentation, and follow industry guidelines.
+- Participate in assessments, meetings, and optimize ongoing processes.
+
+Key Requirements:
+- Prior experience or academic coursework relevant to ${qTitle}.
+- Solid understanding and command over required domain areas (Experience: ${qExperience}).
+- Strong alignment with key skills: ${qSkills.join(', ')}.
+- Good analytical, problem-solving, and communication skills.`,
+            skills: qSkills,
+            experience: qExperience,
+            salary: qSalary,
+            postedAt: new Date().toISOString(),
+            applyUrl: qApplyUrl,
+            source: qSource,
+          };
+          setJob(fallbackJob);
+          setErrorJob(null);
+        } else {
+          setErrorJob(err.message || 'Failed to load details.');
+        }
       } finally {
         setLoadingJob(false);
       }

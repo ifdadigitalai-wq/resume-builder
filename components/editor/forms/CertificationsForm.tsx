@@ -18,7 +18,7 @@ export function CertificationsForm() {
   const { trigger, isLoading } = useAIAction();
 
   const handleSuggestCertifications = () => {
-    const primaryRole = resume.experience[0]?.role || 'Software Engineer';
+    const primaryRole = resume.experience[0]?.role || resume.education[0]?.field || 'Professional';
     const skillsList = resume.skills?.join(', ') || '';
     const contextStr = `Role: ${primaryRole}, Skills: ${skillsList}`;
 

@@ -1,11 +1,12 @@
 import { JobProvider } from '../provider';
 import { Job, JobSearchParams, JobSearchResult } from '../types';
+import { MOCK_JOBS } from '../data/mockJobs';
 
 export class LinkedInJobProvider implements JobProvider {
   name = 'LinkedIn';
 
   async searchJobs(params: JobSearchParams): Promise<JobSearchResult> {
-    const { query = 'Software Engineer', location = 'India', page = 1, limit = 10 } = params;
+    const { query = 'Professional', location = 'India', page = 1, limit = 10 } = params;
     const start = (page - 1) * limit;
 
     try {
@@ -68,7 +69,11 @@ export class LinkedInJobProvider implements JobProvider {
           title.toLowerCase().includes(skill.toLowerCase())
         );
         if (jobSkills.length === 0) {
-          jobSkills.push('JavaScript', 'Software Engineering');
+          const titleWords = title.split(/[\s,.\-\/()]+/).filter(w => w.length > 3 && !['hiring', 'manager', 'associate', 'senior', 'junior', 'officer', 'executive', 'lead', 'specialist', 'analyst', 'developer', 'engineer', 'professional'].includes(w.toLowerCase()));
+          jobSkills.push(...titleWords.slice(0, 3));
+          if (query && query !== 'Professional' && !jobSkills.some(s => s.toLowerCase() === query.toLowerCase())) {
+            jobSkills.push(query);
+          }
         }
 
         // Determine experience from title
@@ -115,11 +120,25 @@ export class LinkedInJobProvider implements JobProvider {
       };
     } catch (err) {
       console.error('LinkedIn Guest Scraper Error:', err);
-      return { jobs: [], total: 0, page, totalPages: 1 };
+      const filtered = MOCK_JOBS.filter(j => 
+        j.source === 'linkedin' && 
+        (query === 'Professional' || 
+         j.title.toLowerCase().includes(query.toLowerCase()) || 
+         j.description.toLowerCase().includes(query.toLowerCase()))
+      );
+      return {
+        jobs: filtered.slice(start, start + limit),
+        total: filtered.length,
+        page,
+        totalPages: Math.ceil(filtered.length / limit) || 1
+      };
     }
   }
 
   async getJobById(id: string): Promise<Job | null> {
+    const mockJob = MOCK_JOBS.find(j => j.id === id);
+    if (mockJob) return mockJob;
+
     const numericId = id.replace('linkedin-', '');
 
     try {
@@ -132,11 +151,11 @@ export class LinkedInJobProvider implements JobProvider {
       });
 
       let description = '';
-      let title = 'Software Engineer';
-      let company = 'Hiring Company';
-      let location = 'India';
+      let title = '';
+      let company = '';
+      let location = '';
       let applyUrl = `https://www.linkedin.com/jobs/view/${numericId}`;
-      let jobSkills: string[] = ['React', 'TypeScript', 'Node.js', 'JavaScript'];
+      let jobSkills: string[] = [];
       let experience = '1-3 years';
 
       if (res.status === 200) {
@@ -201,20 +220,10 @@ export class LinkedInJobProvider implements JobProvider {
         }
       }
 
-      if (!description) {
-        description = `This position at ${company} is looking for a skilled professional to join their development team.
-
-Key Responsibilities:
-- Design, build, and deploy robust interfaces and API connections.
-- Ensure applications are highly scalable, secure, and performant.
-- Write clean, reviewable, and test-covered software.
-- Troubleshoot issues and optimize existing systems.
-
-Key Requirements:
-- Strong familiarity with software engineering best practices.
-- Command over version control (Git) and REST API principles.
-- Experience with cloud pipelines (AWS/Azure) is a plus.
-- Good communication and collaboration skills.`;
+      // If parsing failed or details are empty, return null so that registry.ts
+      // can gracefully fall back to returning the correct job info from the search cache.
+      if (!description || !title) {
+        return null;
       }
 
       return {

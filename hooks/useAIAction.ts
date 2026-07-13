@@ -61,6 +61,8 @@ export function useAIAction(options?: UseAIActionOptions) {
             role: resume.experience[0]?.role ?? '',
             skills: (resume.skills as any[] || []).map(s => typeof s === 'string' ? s : (s as any).skills?.join(', ') || '').join(', '),
             certifications: (resume.certifications || []).map(c => c.name).join(', '),
+            course: resume.education[0]?.field ?? '',
+            degree: resume.education[0]?.degree ?? '',
           },
         }),
       })

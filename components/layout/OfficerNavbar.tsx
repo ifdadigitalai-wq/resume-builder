@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Menu, Zap, LogOut } from 'lucide-react';
 import Image from "next/image";
+import { useResumeStore } from '@/store/resumeStore';
+import { useATSStore } from '@/store/atsStore';
 
 export function OfficerNavbar() {
   const router = useRouter();
@@ -52,6 +54,12 @@ export function OfficerNavbar() {
             try {
               await fetch('/api/auth/logout', { method: 'POST' });
             } catch {}
+
+            // Reset stores and clear localStorage to prevent cross-user data leakage
+            useResumeStore.getState().reset();
+            useATSStore.getState().reset();
+            localStorage.clear();
+
             router.push('/login');
           }}
           className="group flex items-center gap-2 rounded-xl bg-red-50 px-4 py-2 text-xs font-bold text-red-600 

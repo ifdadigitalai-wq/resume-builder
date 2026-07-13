@@ -39,20 +39,16 @@ export async function POST(req: NextRequest) {
 
     const { studentIds, message, type } = parsed.data
 
-    // Create notifications for all students in a transaction
-    const notifications = await db.$transaction(
-      studentIds.map((studentId) =>
-        db.notification.create({
-          data: {
-            userId: studentId,
-            message,
-            type,
-          },
-        })
-      )
-    )
+    // Create notifications for all students in a single batch insert
+    const result = await db.notification.createMany({
+      data: studentIds.map((studentId) => ({
+        userId: studentId,
+        message,
+        type,
+      })),
+    });
 
-    return NextResponse.json({ success: true, count: notifications.length })
+    return NextResponse.json({ success: true, count: result.count })
   } catch (e: any) {
     console.error('Failed to create notifications:', e)
     return NextResponse.json({ error: e.message || 'Failed to send notifications' }, { status: 500 })

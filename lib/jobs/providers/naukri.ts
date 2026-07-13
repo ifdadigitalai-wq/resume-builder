@@ -1,11 +1,12 @@
 import { JobProvider } from '../provider';
 import { Job, JobSearchParams, JobSearchResult } from '../types';
+import { MOCK_JOBS } from '../data/mockJobs';
 
 export class NaukriJobProvider implements JobProvider {
   name = 'Naukri.com';
 
   async searchJobs(params: JobSearchParams): Promise<JobSearchResult> {
-    const { query = 'Developer', location, experience, workmode, page = 1, limit = 10 } = params;
+    const { query = 'Professional', location, experience, workmode, page = 1, limit = 10 } = params;
 
     try {
       const searchUrl = `https://www.arbeitnow.com/api/job-board-api?page=${page}`;
@@ -63,7 +64,14 @@ export class NaukriJobProvider implements JobProvider {
           loc = 'Remote';
         }
 
-        let skills = rj.tags || ['JavaScript', 'HTML', 'CSS'];
+        let skills = rj.tags || [];
+        if (skills.length === 0) {
+          const titleWords = rj.title.split(/[\s,.\-\/()]+/).filter((w: string) => w.length > 3 && !['hiring', 'manager', 'associate', 'senior', 'junior', 'officer', 'executive', 'lead', 'specialist', 'analyst', 'developer', 'engineer', 'professional'].includes(w.toLowerCase()));
+          skills.push(...titleWords.slice(0, 3));
+          if (query && query !== 'Professional' && !skills.some((s: string) => s.toLowerCase() === query.toLowerCase())) {
+            skills.push(query);
+          }
+        }
         if (skills.length > 8) {
           skills = skills.slice(0, 8);
         }
@@ -137,11 +145,25 @@ export class NaukriJobProvider implements JobProvider {
       };
     } catch (e) {
       console.error('Naukri Scraper Error:', e);
-      return { jobs: [], total: 0, page, totalPages: 1 };
+      const filtered = MOCK_JOBS.filter(j => 
+        j.source === 'naukri.com' && 
+        (query === 'Professional' || 
+         j.title.toLowerCase().includes(query.toLowerCase()) || 
+         j.description.toLowerCase().includes(query.toLowerCase()))
+      );
+      return {
+        jobs: filtered.slice(0, limit),
+        total: filtered.length,
+        page,
+        totalPages: Math.ceil(filtered.length / limit) || 1
+      };
     }
   }
 
   async getJobById(id: string): Promise<Job | null> {
+    const mockJob = MOCK_JOBS.find(j => j.id === id);
+    if (mockJob) return mockJob;
+
     const slug = id.replace('naukri-', '');
 
     try {
@@ -153,25 +175,7 @@ export class NaukriJobProvider implements JobProvider {
       const match = rawJobs.find((rj: any) => rj.slug === slug);
 
       if (!match) {
-        // Fallback placeholder details if job slides off page 1
-        return {
-          id,
-          title: slug
-            .split('-')
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(' '),
-          company: 'Hiring Company',
-          location: 'Remote',
-          description: `This position is listed on Naukri.com partner boards.
-
-Please click the Apply button to read the full specifications and submit your profile.`,
-          skills: ['Software Engineering', 'Technical Skills'],
-          experience: '1-3 years',
-          salary: 'Competitive Salary',
-          postedAt: new Date().toISOString(),
-          applyUrl: `https://www.arbeitnow.com/jobs/${slug}`,
-          source: 'Naukri.com',
-        };
+        return null;
       }
 
       const cleanDesc = match.description

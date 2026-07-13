@@ -14,6 +14,7 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  MessageSquare,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
@@ -101,12 +102,16 @@ export function StudentSidebar() {
       href: '/downloads',
       label: 'Downloads',
       icon: Download,
+    }, {
+      href: '/Admin-Message',
+      label: 'Admin Message',
+      icon: MessageSquare
     },
     {
       href: '/settings',
       label: 'Settings',
       icon: Settings,
-    },
+    }
   ];
 
   return (

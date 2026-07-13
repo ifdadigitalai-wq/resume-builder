@@ -16,12 +16,14 @@ interface ATSState {
   error: string | null
   history: JobDescriptionHistoryItem[]
   activeTitle: string | null
+  activeResumeId: string | null
   setJobDescription: (jd: string) => void
   setResult: (r: any) => void
   setAnalyzing: (v: boolean) => void
   setError: (e: string | null) => void
   addHistory: (text: string) => void
   setActiveTitle: (title: string | null) => void
+  setActiveResumeId: (id: string | null) => void
   clearHistory: () => void
   reset: () => void
 }
@@ -35,6 +37,7 @@ export const useATSStore = create<ATSState>()(
       error: null,
       history: [],
       activeTitle: null,
+      activeResumeId: null,
 
       setJobDescription: (jd) => set({ jobDescription: jd }),
       setResult: (r) => set((state) => {
@@ -77,6 +80,7 @@ export const useATSStore = create<ATSState>()(
       setAnalyzing: (v) => set({ isAnalyzing: v }),
       setError: (e) => set({ error: e, isAnalyzing: false }),
       setActiveTitle: (title) => set({ activeTitle: title }),
+      setActiveResumeId: (id) => set({ activeResumeId: id }),
       addHistory: (text) => set((state) => {
         if (!text || !text.trim()) return {};
         const normalizedText = text.trim();
@@ -115,7 +119,7 @@ export const useATSStore = create<ATSState>()(
         return { history: updatedHistory, activeTitle: derivedTitle };
       }),
       clearHistory: () => set({ history: [], activeTitle: null }),
-      reset: () => set({ result: null, jobDescription: '', error: null, activeTitle: null }),
+      reset: () => set({ result: null, jobDescription: '', error: null, activeTitle: null, activeResumeId: null }),
     }),
     { name: 'ats-store' }
   )

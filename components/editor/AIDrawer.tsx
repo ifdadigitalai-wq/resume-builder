@@ -98,7 +98,7 @@ export function AIDrawer() {
           input: query,
           context: {
             name: resume.personal?.fullName || 'Candidate',
-            role: resume.experience?.[0]?.role || 'Software Engineer',
+            role: resume.experience?.[0]?.role || resume.education?.[0]?.field || 'Professional',
             skills: Array.isArray(resume.skills) ? resume.skills.join(', ') : '',
             certifications: Array.isArray(resume.certifications) ? resume.certifications.map(c => c.name).join(', ') : '',
           },

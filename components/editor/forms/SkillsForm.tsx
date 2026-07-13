@@ -2,7 +2,6 @@
 import { useState, KeyboardEvent } from 'react';
 import { useResumeStore } from '@/store/resumeStore';
 import { useATSStore } from '@/store/atsStore';
-import { SUGGESTED_SKILLS } from '@/lib/constants';
 import { Button } from '@/components/ui/Button';
 import { X, Plus, Sparkles, Check } from 'lucide-react';
 import { useAIAction } from '@/hooks/useAIAction';
@@ -16,7 +15,7 @@ export function SkillsForm() {
   const [skillInput, setSkillInput] = useState('');
 
   const resume = useResumeStore((s) => s.resume);
-  const primaryRole = resume.experience[0]?.role || 'Software Engineer';
+  const primaryRole = resume.experience[0]?.role || resume.education[0]?.field || 'Professional';
   const { trigger, isLoading } = useAIAction();
 
   const atsResult = useATSStore((s) => s.result);
@@ -140,22 +139,7 @@ export function SkillsForm() {
           </div>
         )}
 
-        {/* Suggestions */}
-        <div>
-          <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-2">General Suggestions</p>
-          <div className="flex flex-wrap gap-1.5 max-h-[120px] overflow-y-auto pr-1">
-            {SUGGESTED_SKILLS.filter(s => !skills.includes(s)).slice(0, 16).map(s => (
-              <button
-                key={s}
-                onClick={() => handleAddSuggestedSkill(s)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-1.5 transition-colors"
-              >
-                <Plus className="h-2.5 w-2.5" />
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
+
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3">

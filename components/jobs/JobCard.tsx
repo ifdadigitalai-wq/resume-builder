@@ -110,7 +110,22 @@ export function JobCard({ job, hasResume = true }: JobCardProps) {
             <span>{postedTime}</span>
           </div>
 
-          <Link href={`/jobs/${job.id}`} className="shrink-0">
+          <Link
+            href={{
+              pathname: `/jobs/${job.id}`,
+              query: {
+                title: job.title,
+                company: job.company,
+                location: job.location,
+                skills: (job.skills || []).join(','),
+                applyUrl: job.applyUrl,
+                experience: job.experience,
+                salary: job.salary || '',
+                source: job.source,
+              },
+            }}
+            className="shrink-0"
+          >
             <Button
               variant="secondary"
               size="sm"

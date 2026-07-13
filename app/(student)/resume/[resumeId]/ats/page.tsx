@@ -30,9 +30,13 @@ export default function ATSPage() {
   const setResume = useResumeStore((s) => s.setResume);
   const setATSResult = useATSStore((s) => s.setResult);
   const setATSJobDescription = useATSStore((s) => s.setJobDescription);
+  const resetATS = useATSStore((s) => s.reset);
+  const activeResumeId = useATSStore((s) => s.activeResumeId);
+  const setActiveResumeId = useATSStore((s) => s.setActiveResumeId);
   const { trigger: triggerAI } = useAIAction();
   const showToast = useUIStore((s) => s.showToast);
   const [fixingIndex, setFixingIndex] = useState<number | null>(null);
+  const [hasTriggered, setHasTriggered] = useState(false);
 
   // Job description tracker & picker state
   const [officialJobs, setOfficialJobs] = useState<any[]>([]);
@@ -44,6 +48,21 @@ export default function ATSPage() {
   const activeTitle = useATSStore((s) => s.activeTitle);
   const addHistory = useATSStore((s) => s.addHistory);
   const clearHistory = useATSStore((s) => s.clearHistory);
+
+  // Reset previous state if we are loading a different resume ID or another student session
+  useEffect(() => {
+    if (resumeId && activeResumeId !== resumeId) {
+      resetATS();
+      setActiveResumeId(resumeId);
+    }
+  }, [resumeId, activeResumeId, resetATS, setActiveResumeId]);
+
+  // Reset previous state if we are loading a specific job ID
+  useEffect(() => {
+    if (jobId) {
+      resetATS();
+    }
+  }, [jobId, resetATS]);
 
   useEffect(() => {
     if (!resumeId) return;
@@ -65,25 +84,26 @@ export default function ATSPage() {
             completionScore: resume.completionScore,
             status: resume.status,
           });
+          
+          // Bypasses cache if we are loading a specific job
           const lastAnalysis = (resume as any).atsAnalyses?.[0];
-          if (lastAnalysis) {
+          if (lastAnalysis && !jobId) {
             setATSResult(lastAnalysis);
-            // Only overwrite active description if we are not loading a specific jobId from Jobs page
-            if (!jobId) {
-              setATSJobDescription(lastAnalysis.jobDescription || '');
-              setJobDescription(lastAnalysis.jobDescription || '');
-              if (lastAnalysis.jobDescription) {
-                addHistory(lastAnalysis.jobDescription);
-              }
+            setATSJobDescription(lastAnalysis.jobDescription || '');
+            setJobDescription(lastAnalysis.jobDescription || '');
+            if (lastAnalysis.jobDescription) {
+              addHistory(lastAnalysis.jobDescription);
             }
           }
         }
       });
   }, [resumeId, jobId, setResume, setATSResult, setATSJobDescription, addHistory]);
 
+  const triggerAudit = searchParams.get('triggerAudit') === 'true';
+
   // Load target jobId details if present
   useEffect(() => {
-    if (!jobId) return;
+    if (!jobId || hasTriggered) return;
     fetch(`/api/jobs/detail?id=${jobId}`)
       .then((r) => r.json())
       .then(({ job }) => {
@@ -93,29 +113,51 @@ export default function ATSPage() {
           useATSStore.getState().setActiveTitle(`${job.title} @ ${job.company}`);
           addHistory(job.description);
           showToast(`Prefilled details for ${job.title}`, 'success');
+
+          if (triggerAudit) {
+            setHasTriggered(true);
+            analyze(job.description);
+          }
         }
       })
       .catch((err) => {
         console.error('Failed to load job details in ATS audit:', err);
       });
-  }, [jobId, setATSJobDescription, addHistory, showToast]);
+  }, [jobId, triggerAudit, hasTriggered, setATSJobDescription, addHistory, showToast, analyze]);
 
+
+  const studentCourse = resume.education?.[0]?.field;
 
   useEffect(() => {
+    const courseQuery = studentCourse ? studentCourse : '';
+
     fetch('/api/officer/jobs')
       .then((r) => r.json())
       .then((res) => {
-        if (res.data) setOfficialJobs(res.data);
+        if (res.data) {
+          if (courseQuery) {
+            const term = courseQuery.toLowerCase();
+            const filtered = res.data.filter((job: any) => 
+              job.title.toLowerCase().includes(term) ||
+              job.description.toLowerCase().includes(term) ||
+              (job.requiredSkills || []).some((s: string) => s.toLowerCase().includes(term))
+            );
+            setOfficialJobs(filtered);
+          } else {
+            setOfficialJobs(res.data);
+          }
+        }
       })
       .catch(() => {});
 
-    fetch('/api/jobs/search?limit=10')
+    const queryParam = courseQuery ? `?query=${encodeURIComponent(courseQuery)}&limit=10` : '?limit=10';
+    fetch(`/api/jobs/search${queryParam}`)
       .then((r) => r.json())
       .then((res) => {
         if (res.jobs) setPublicJobs(res.jobs);
       })
       .catch(() => {});
-  }, []);
+  }, [studentCourse]);
 
 
   useEffect(() => {

@@ -9,6 +9,7 @@ import { useResumeSync } from '@/hooks/useResumeSync'
 import { useNotificationStore } from '@/store/notificationStore'
 import { useAIStore } from '@/store/aiStore'
 import { useResumeStore } from '@/store/resumeStore'
+import { useATSStore } from '@/store/atsStore'
 
 interface TopBarProps {
   title?: string
@@ -450,6 +451,12 @@ export function TopBar({ title, resumeId, className }: TopBarProps) {
                     try {
                       await fetch('/api/auth/logout', { method: 'POST' })
                     } catch {}
+                    
+                    // Reset stores and clear localStorage to prevent cross-user data leakage
+                    useResumeStore.getState().reset()
+                    useATSStore.getState().reset()
+                    localStorage.clear()
+
                     setIsLoggedIn(false)
                     setOpenMenu(false)
                     router.push('/login')

@@ -14,12 +14,3 @@ export const RESUME_SECTIONS = [
   { key: 'experience', label: 'Experience', icon: 'Briefcase' },
   { key: 'certifications', label: 'Certifications', icon: 'Award' },
 ] as const;
-
-export const SUGGESTED_SKILLS = [
-  'React', 'Next.js', 'TypeScript', 'JavaScript', 'Node.js', 'Python',
-  'Java', 'C++', 'MongoDB', 'PostgreSQL', 'MySQL', 'Redis',
-  'Docker', 'Kubernetes', 'AWS', 'GCP', 'Azure', 'Git',
-  'REST API', 'GraphQL', 'Figma', 'TailwindCSS', 'Express.js',
-  'FastAPI', 'Django', 'Machine Learning', 'Data Structures', 'Algorithms',
-  'System Design', 'CI/CD', 'Agile', 'Scrum', 'Linux',
-];

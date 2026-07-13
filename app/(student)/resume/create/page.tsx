@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
 import { WizardShell } from '@/components/wizard/WizardShell';
-import { SUGGESTED_SKILLS } from '@/lib/constants';
 import { useUIStore } from '@/store/uiStore';
 import { Sparkles, ArrowRight } from 'lucide-react';
 
@@ -31,6 +30,15 @@ export default function CreateResumePage() {
   const [personal, setPersonal] = useState(emptyPersonal);
   const [education, setEducation] = useState(emptyEducation);
   const [skills, setSkills] = useState<string[]>([]);
+  const [skillInput, setSkillInput] = useState('');
+
+  const handleAddSkill = () => {
+    const val = skillInput.trim();
+    if (!val) return;
+    const newSkills = val.split(',').map(s => s.trim()).filter(Boolean);
+    setSkills(current => Array.from(new Set([...current, ...newSkills])));
+    setSkillInput('');
+  };
   const [projects, setProjects] = useState(emptyProject);
   const [experience, setExperience] = useState(emptyExperience);
   const [cert, setCert] = useState(emptyCert);
@@ -158,20 +166,43 @@ export default function CreateResumePage() {
     }
     if (step === 3) {
       return (
-        <div className="space-y-4">
+        <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex flex-wrap gap-2">
-            {skills.map((skill) => <Badge key={skill} variant="blue">{skill}</Badge>)}
-            {skills.length === 0 && <p className="text-xs text-text-muted italic">No skills added yet. Click suggestions below or type your own.</p>}
-          </div>
-          <div>
-            <p className="mb-2 text-xs font-semibold text-text-muted">Suggested skills</p>
-            <div className="flex flex-wrap gap-2">
-              {SUGGESTED_SKILLS.filter(s => !skills.includes(s)).slice(0, 16).map((skill) => (
-                <button key={skill} onClick={() => setSkills((current) => current.includes(skill) ? current : [...current, skill])} className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-text-secondary hover:border-primary-DEFAULT hover:text-primary-DEFAULT">
-                  {skill}
+            {skills.map((skill) => (
+              <Badge key={skill} variant="blue" className="flex items-center gap-1.5 py-1">
+                {skill}
+                <button
+                  type="button"
+                  onClick={() => setSkills(skills.filter(s => s !== skill))}
+                  className="hover:text-red-500 font-bold ml-1 transition-colors text-xs"
+                >
+                  ×
                 </button>
-              ))}
-            </div>
+              </Badge>
+            ))}
+            {skills.length === 0 && <p className="text-xs text-text-muted italic">No skills added yet. Type your skills below.</p>}
+          </div>
+          <div className="flex gap-2">
+            <input
+              value={skillInput}
+              onChange={(e) => setSkillInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                  e.preventDefault();
+                  handleAddSkill();
+                }
+              }}
+              placeholder="Type a skill (e.g. React) and press Enter or comma..."
+              className="flex-1 text-xs px-3 py-2 border border-border rounded-[8px] focus:outline-none focus:border-primary-DEFAULT bg-white text-slate-800"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={handleAddSkill}
+            >
+              Add
+            </Button>
           </div>
         </div>
       );

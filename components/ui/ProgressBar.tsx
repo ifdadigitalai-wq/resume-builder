@@ -1,4 +1,5 @@
 'use client';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 
 interface ProgressBarProps {
@@ -21,6 +22,19 @@ export function ProgressBar({
   showLabel = false,
 }: ProgressBarProps) {
   const pct = Math.min(Math.max((value / max) * 100, 0), 100);
+  const [width, setWidth] = useState(0);
+
+  useEffect(() => {
+    if (animated) {
+      // Small delay to allow the mounting transition to trigger
+      const timer = setTimeout(() => {
+        setWidth(pct);
+      }, 50);
+      return () => clearTimeout(timer);
+    } else {
+      setWidth(pct);
+    }
+  }, [pct, animated]);
 
   const colors = {
     blue: 'bg-primary-DEFAULT',
@@ -51,12 +65,10 @@ export function ProgressBar({
         <div
           className={cn(
             'h-full rounded-full transition-all duration-1000 ease-out',
-            colors[color],
-            animated && 'progress-animate'
+            colors[color]
           )}
           style={{
-            width: `${pct}%`,
-            ['--target-width' as string]: `${pct}%`,
+            width: `${width}%`,
           }}
         />
       </div>
