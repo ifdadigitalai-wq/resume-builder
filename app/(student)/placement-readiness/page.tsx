@@ -32,48 +32,14 @@ export default function PlacementReadinessPage() {
   useEffect(() => {
     fetch('/api/dashboard/stats')
       .then((res) => res.json())
-      .then(async (data) => {
-        let projectCount = 0;
-        let skillCount = 0;
-        let hasLinkedIn = false;
-        let completionScore = data.completionScore ?? 0;
-        let atsScore = data.latestAtsScore ?? 0;
-        const resumeId = data.latestResumeId || null;
-
-        if (data.latestResumeId) {
-          const res2 = await fetch(`/api/resume/${data.latestResumeId}`);
-          if (res2.ok) {
-            const { resume } = await res2.json();
-            const sections = resume.sections || {};
-            projectCount = sections.projects?.length ?? 0;
-            const rawSkills = sections.skills || [];
-            if (Array.isArray(rawSkills)) {
-              rawSkills.forEach((item: any) => {
-                if (typeof item === 'string') {
-                  skillCount++;
-                } else if (item && typeof item === 'object') {
-                  if (Array.isArray(item.skills)) {
-                    skillCount += item.skills.length;
-                  } else if (typeof item.name === 'string') {
-                    skillCount++;
-                  }
-                }
-              });
-            }
-            hasLinkedIn = !!(sections.personal?.socials?.linkedIn || sections.personal?.linkedIn);
-            completionScore = calculateCompletion(sections);
-            // Use ATS score directly from the same resume to guarantee consistency
-            atsScore = resume.atsScore ?? 0;
-          }
-        }
-
+      .then((data) => {
         setStats({
-          completionScore,
-          latestAtsScore: atsScore,
-          projectCount,
-          skillCount,
-          hasLinkedIn,
-          resumeId,
+          completionScore: data.completionScore ?? 0,
+          latestAtsScore: data.latestAtsScore ?? 0,
+          projectCount: data.projectCount ?? 0,
+          skillCount: data.skillCount ?? 0,
+          hasLinkedIn: !!data.hasLinkedIn,
+          resumeId: data.latestResumeId || null,
         });
       })
       .catch(() => {})

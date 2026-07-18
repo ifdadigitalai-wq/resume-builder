@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/authGuard'
 import { db } from '@/lib/db'
+import { derivePlacementStatus } from '@/lib/resumeUtils'
 
 export async function GET(req: Request) {
   const { session, error: authError } = await requireAuth('OFFICER')
@@ -181,8 +182,5 @@ export async function POST(req: Request) {
 }
 
 function deriveStatus(completion?: number, atsScore?: number) {
-  if (!completion) return 'Not Started'
-  if (atsScore && atsScore >= 80 && completion >= 90) return 'Ready'
-  if (completion >= 50) return 'In Progress'
-  return 'Not Started'
+  return derivePlacementStatus(completion ?? 0, atsScore ?? 0)
 }

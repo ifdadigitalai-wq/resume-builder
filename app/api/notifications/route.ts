@@ -2,14 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/authGuard'
 import { db } from '@/lib/db'
 import { z } from 'zod'
+import { sendManyNotifications } from '@/lib/notificationService'
 
 export async function GET(req: NextRequest) {
   const { session, error } = await requireAuth()
   if (error) return error
 
   try {
+    const { searchParams } = new URL(req.url)
+    const type = searchParams.get('type')
+
     const notifications = await db.notification.findMany({
-      where: { userId: session.id },
+      where: { 
+        userId: session.id,
+        type: type ? type : undefined,
+      },
       orderBy: { createdAt: 'desc' },
       take: 50, // Limit to recent 50 notifications
     })
@@ -39,16 +46,10 @@ export async function POST(req: NextRequest) {
 
     const { studentIds, message, type } = parsed.data
 
-    // Create notifications for all students in a single batch insert
-    const result = await db.notification.createMany({
-      data: studentIds.map((studentId) => ({
-        userId: studentId,
-        message,
-        type,
-      })),
-    });
+    // Create and broadcast notifications in a single batch
+    const createdNotifs = await sendManyNotifications(studentIds, message, type);
 
-    return NextResponse.json({ success: true, count: result.count })
+    return NextResponse.json({ success: true, count: createdNotifs.length })
   } catch (e: any) {
     console.error('Failed to create notifications:', e)
     return NextResponse.json({ error: e.message || 'Failed to send notifications' }, { status: 500 })

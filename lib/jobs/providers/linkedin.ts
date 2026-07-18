@@ -1,6 +1,5 @@
 import { JobProvider } from '../provider';
 import { Job, JobSearchParams, JobSearchResult } from '../types';
-import { MOCK_JOBS } from '../data/mockJobs';
 
 export class LinkedInJobProvider implements JobProvider {
   name = 'LinkedIn';
@@ -120,25 +119,16 @@ export class LinkedInJobProvider implements JobProvider {
       };
     } catch (err) {
       console.error('LinkedIn Guest Scraper Error:', err);
-      const filtered = MOCK_JOBS.filter(j => 
-        j.source === 'linkedin' && 
-        (query === 'Professional' || 
-         j.title.toLowerCase().includes(query.toLowerCase()) || 
-         j.description.toLowerCase().includes(query.toLowerCase()))
-      );
       return {
-        jobs: filtered.slice(start, start + limit),
-        total: filtered.length,
+        jobs: [],
+        total: 0,
         page,
-        totalPages: Math.ceil(filtered.length / limit) || 1
+        totalPages: 0,
       };
     }
   }
 
   async getJobById(id: string): Promise<Job | null> {
-    const mockJob = MOCK_JOBS.find(j => j.id === id);
-    if (mockJob) return mockJob;
-
     const numericId = id.replace('linkedin-', '');
 
     try {

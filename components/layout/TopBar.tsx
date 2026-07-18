@@ -10,6 +10,7 @@ import { useNotificationStore } from '@/store/notificationStore'
 import { useAIStore } from '@/store/aiStore'
 import { useResumeStore } from '@/store/resumeStore'
 import { useATSStore } from '@/store/atsStore'
+import { useNotificationWebSocket } from '@/hooks/useNotificationWebSocket'
 
 interface TopBarProps {
   title?: string
@@ -30,6 +31,9 @@ export function TopBar({ title, resumeId, className }: TopBarProps) {
   const { isDownloading, setIsDownloading, showToast } = useUIStore()
 
   const { notifications, fetchNotifications, markAsRead, markAllAsRead } = useNotificationStore()
+  
+  // Connect WebSocket notifications listener
+  useNotificationWebSocket()
 
   const aiIsOpen = useAIStore(s => s.isOpen)
   const aiOpen = useAIStore(s => s.open)
@@ -42,8 +46,6 @@ export function TopBar({ title, resumeId, className }: TopBarProps) {
 
   useEffect(() => {
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {

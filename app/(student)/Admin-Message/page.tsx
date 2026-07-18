@@ -15,13 +15,23 @@ import {
 
 export default function Message() {
     const router = useRouter();
-    const { notifications, fetchNotifications, markAsRead, isLoading } = useNotificationStore();
+    const { notifications: globalNotifications, markAsRead: globalMarkAsRead } = useNotificationStore();
+    const [notifications, setNotifications] = useState<any[]>([]);
+    const [localLoading, setLocalLoading] = useState(true);
     const [latestResumeId, setLatestResumeId] = useState<string | null>(null);
     const [loadingResumeModule, setLoadingResumeModule] = useState(true);
 
     // Fetch notifications and latest resume info on mount
     useEffect(() => {
-        fetchNotifications();
+        fetch('/api/notifications?type=JOB_ALERT')
+            .then(res => res.json())
+            .then(data => {
+                if (data.result) {
+                    setNotifications(data.result);
+                }
+            })
+            .catch(err => console.error("Failed to load local announcements", err))
+            .finally(() => setLocalLoading(false));
         
         fetch('/api/resume')
             .then(res => res.json())
@@ -33,7 +43,28 @@ export default function Message() {
             })
             .catch(err => console.error("Failed to load resumes", err))
             .finally(() => setLoadingResumeModule(false));
-    }, [fetchNotifications]);
+    }, []);
+
+    // Sync global WebSocket notification updates into the local state
+    useEffect(() => {
+        globalNotifications.forEach(globalNotif => {
+            if (globalNotif.type === 'JOB_ALERT') {
+                setNotifications(prev => {
+                    const exists = prev.some(n => n.id === globalNotif.id);
+                    if (!exists) {
+                        return [globalNotif, ...prev];
+                    }
+                    // Sync read status if it changed globally
+                    return prev.map(n => n.id === globalNotif.id ? { ...n, isRead: globalNotif.isRead } : n);
+                });
+            }
+        });
+    }, [globalNotifications]);
+
+    const handleMarkAsRead = async (id: string) => {
+        setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        await globalMarkAsRead(id);
+    };
 
     const handleAtsClick = (jobId: string | null) => {
         if (latestResumeId) {
@@ -83,7 +114,7 @@ export default function Message() {
                 </p>
             </div>
 
-            {isLoading || loadingResumeModule ? (
+            {localLoading || loadingResumeModule ? (
                 <div className="min-h-[250px] flex items-center justify-center bg-white/50 border border-slate-100 rounded-2xl shadow-sm">
                     <div className="flex items-center text-slate-500 font-semibold gap-2">
                         <Loader2 size={20} className="animate-spin text-blue-600" />
@@ -131,7 +162,7 @@ export default function Message() {
                                             ? "bg-slate-100 text-slate-400"
                                             : "bg-blue-600 text-white shadow-md shadow-blue-500/20"
                                     )}>
-                                        {isJobAlert ? <Briefcase size={18} /> : <Bell size={18} />}
+                                        <Briefcase size={18} />
                                     </div>
 
                                     <div className="flex-1 min-w-0">
@@ -142,7 +173,7 @@ export default function Message() {
                                                     ? "bg-slate-100 text-slate-500"
                                                     : "bg-blue-100 text-blue-700"
                                             )}>
-                                                {isJobAlert ? 'Job Match Alert' : 'System Alert'}
+                                                Job Match Alert
                                             </span>
                                             <span className="text-[10px] text-slate-400 font-semibold">
                                                 {new Date(notification.createdAt).toLocaleString()}
@@ -159,7 +190,7 @@ export default function Message() {
                                             <div>
                                                 {!notification.isRead && (
                                                     <button
-                                                        onClick={() => markAsRead(notification.id)}
+                                                        onClick={() => handleMarkAsRead(notification.id)}
                                                         className="text-xs font-bold text-slate-400 hover:text-blue-600 transition-colors"
                                                     >
                                                         Mark as Read

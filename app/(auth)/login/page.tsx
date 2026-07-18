@@ -152,6 +152,18 @@ export default function PlacementLogin() {
                 </>
               )}
             </motion.button>
+
+            {/* Sign Up Link */}
+            <div className="text-center text-xs text-slate-400 mt-4">
+              Don't have an account?{' '}
+              <button
+                type="button"
+                onClick={() => router.push('/register')}
+                className="text-cyan-400 hover:underline hover:text-cyan-300 font-bold"
+              >
+                Register here
+              </button>
+            </div>
           </div>
 
           {/* Footer */}

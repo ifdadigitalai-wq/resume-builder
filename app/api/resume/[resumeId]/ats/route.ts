@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/authGuard'
 import { db } from '@/lib/db'
 import OpenAI from 'openai'
+import { sendNotification } from '@/lib/notificationService'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ resumeId: string }> }) {
   const { resumeId } = await params
@@ -106,30 +107,50 @@ Note: The overallScore MUST be calculated exactly based on the weights: keywordS
     return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
   }
 
+  const newAnalysis = {
+    overallScore: result.overallScore,
+    keywordScore: result.keywordScore,
+    formattingScore: result.formattingScore,
+    completenessScore: result.completenessScore,
+    jobTitle: result.jobTitle || 'Job Role',
+    jobDescription: jobDescription,
+    keywords: result.keywords || { matched: [], missing: [], matchRate: 0 },
+    suggestions: result.suggestions || [],
+    sections: result.sections || [],
+    analyzedAt: new Date().toISOString(),
+  }
+
+  let existingAnalyses: any[] = []
+  if (targetResume.atsAnalyses && Array.isArray(targetResume.atsAnalyses)) {
+    existingAnalyses = targetResume.atsAnalyses as any[]
+  }
+  const updatedAnalyses = [newAnalysis, ...existingAnalyses].slice(0, 10)
+
   await db.resume.update({
     where: { id: targetResume.id },
-    data: { atsScore: result.overallScore }
+    data: { 
+      atsScore: result.overallScore,
+      atsAnalyses: updatedAnalyses,
+    }
   })
 
-  // Create system notification
-  await db.notification.create({
+  // Create and broadcast system notification
+  await sendNotification(
+    session.id,
+    `Your resume scored ${result.overallScore}% compatibility for the role "${result.jobTitle || 'Job Role'}".`,
+    'ats'
+  )
+
+  await db.activity.create({
     data: {
       userId: session.id,
-      message: `Your resume scored ${result.overallScore}% compatibility for the role "${result.jobTitle || 'Job Role'}".`,
-      type: 'ats',
+      type: 'ATS_RUN',
+      description: `Ran ATS analysis for "${result.jobTitle || 'Job Role'}"`,
+      metadata: { resumeId: targetResume.id, score: result.overallScore },
     },
   })
 
-  await db.activity.create({
-      data: {
-        userId: session.id,
-        type: 'ATS_RUN',
-        description: `Ran ATS analysis for "${result.jobTitle || 'Job Role'}"`,
-        metadata: { resumeId: targetResume.id, score: result.overallScore },
-      },
-    })
-
-    return NextResponse.json({ result: { ...result, id: Math.random().toString(), analyzedAt: new Date().toISOString() } })
+  return NextResponse.json({ result: { ...newAnalysis, id: Math.random().toString() } })
   } catch (err: any) {
     console.error('ATS Audit endpoint error:', err)
     return NextResponse.json({ error: err?.message || 'Failed to complete ATS audit' }, { status: 500 })

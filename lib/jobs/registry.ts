@@ -18,13 +18,13 @@ export class JobProviderRegistry {
   async searchAll(params: JobSearchParams): Promise<JobSearchResult> {
     const { page = 1, limit = 10 } = params;
 
-    // Fetch from all providers in parallel
+    // Fetch from all providers in parallel with a buffer limit to ensure full page sizes after filtering
     const searchPromises = this.providers.map((provider) =>
       provider
         .searchJobs({
           ...params,
           page,
-          limit: Math.max(5, Math.ceil(limit / this.providers.length)),
+          limit: Math.max(10, limit * 2),
         })
         .catch((err) => {
           console.error(`Provider ${provider.name} failed:`, err);
@@ -34,23 +34,39 @@ export class JobProviderRegistry {
 
     const results = await Promise.all(searchPromises);
 
-    // Merge jobs
+    // Merge jobs and sum up totals
     const mergedJobs: Job[] = [];
-    let total = 0;
+    let originalTotal = 0;
 
     results.forEach((r) => {
       mergedJobs.push(...r.jobs);
-      total += r.total;
+      originalTotal += r.total;
+    });
+
+    // Filter jobs: onsite and hybrid must be in Delhi/NCR; remote is unrestricted across India
+    const filteredJobs = mergedJobs.filter((job) => {
+      const loc = job.location.toLowerCase();
+      // If it's a remote job, it can be located anywhere
+      if (loc.includes('remote')) {
+        return true;
+      }
+      // If it's onsite or hybrid, it must be restricted to Delhi and NCR
+      const delhiNcrKeywords = ['delhi', 'ncr', 'noida', 'gurgaon', 'gurugram', 'faridabad', 'ghaziabad'];
+      return delhiNcrKeywords.some((k) => loc.includes(k));
     });
 
     // Sort by posted date descending
-    mergedJobs.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
+    filteredJobs.sort((a, b) => new Date(b.postedAt).getTime() - new Date(a.postedAt).getTime());
 
-    const totalPages = Math.max(1, Math.ceil(total / limit));
+    // Scale the estimated total based on the filter pass rate of the current page
+    const passRate = mergedJobs.length > 0 ? filteredJobs.length / mergedJobs.length : 1;
+    const estimatedTotal = Math.round(originalTotal * passRate);
+
+    const totalPages = Math.max(1, Math.ceil(estimatedTotal / limit));
 
     return {
-      jobs: mergedJobs.slice(0, limit),
-      total,
+      jobs: filteredJobs.slice(0, limit),
+      total: estimatedTotal,
       page,
       totalPages,
     };

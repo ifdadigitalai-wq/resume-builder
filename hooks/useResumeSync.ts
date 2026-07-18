@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react'
 import { useResumeStore } from '@/store/resumeStore'
 import { useUIStore } from '@/store/uiStore'
+import { useATSStore } from '@/store/atsStore'
 
 export function useResumeSync(resumeId?: string) {
   const { resume, isDirty, isSaving, setIsSaving, markSaved, resetDirty } = useResumeStore()
@@ -12,6 +13,9 @@ export function useResumeSync(resumeId?: string) {
   useEffect(() => {
     if (!resumeId) return
     const setResume = useResumeStore.getState().setResume
+    const setATSResult = useATSStore.getState().setResult
+    const setATSJobDescription = useATSStore.getState().setJobDescription
+
     fetch(`/api/resume/${resumeId}`)
       .then((r) => r.json())
       .then(({ resume: serverResume }) => {
@@ -31,6 +35,17 @@ export function useResumeSync(resumeId?: string) {
             skills: sections.skills ?? serverResume.skills ?? [],
             certifications: sections.certifications ?? serverResume.certifications ?? [],
           })
+
+          // Hydrate the ATS analysis results from server record
+          if (serverResume.atsAnalyses && serverResume.atsAnalyses[0]) {
+            const lastAnalysis = serverResume.atsAnalyses[0]
+            setATSResult(lastAnalysis)
+            setATSJobDescription(lastAnalysis.jobDescription || '')
+          } else {
+            // Reset if no analysis history exists on the server
+            setATSResult(null)
+            setATSJobDescription('')
+          }
         }
       })
       .catch(() => {})

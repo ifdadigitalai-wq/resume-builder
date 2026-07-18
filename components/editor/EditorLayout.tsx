@@ -97,14 +97,13 @@ export function EditorLayout({ resumeId }: EditorLayoutProps) {
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
-            {rightPanelTab === 'preview' ? (
+          <div className="flex-1 overflow-y-auto relative">
+            {rightPanelTab === 'insights' && <InsightPanel />}
+            {rightPanelTab === 'design' && <DesignSettingsPanel />}
+            
+            <div className={rightPanelTab !== 'preview' ? 'absolute -left-[9999px] -top-[9999px] w-[374px]' : 'w-full'}>
               <ResumePreview />
-            ) : rightPanelTab === 'insights' ? (
-              <InsightPanel />
-            ) : (
-              <DesignSettingsPanel />
-            )}
+            </div>
           </div>
         </aside>
       </div>

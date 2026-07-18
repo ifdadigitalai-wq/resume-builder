@@ -45,6 +45,7 @@ model Resume {
   completionScore Int          @default(0)
   sections        Json         // Structure matches ResumeSections type
   atsScore        Int?
+  atsAnalyses     Json?
   deletedAt       DateTime?    // Soft-delete support
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @default(now()) @updatedAt

@@ -188,11 +188,6 @@ export default function AllocateJobPage() {
                     <h1 className="text-2xl font-extrabold">Job Allocation</h1>
                     <p className="text-gray-500 mt-1">Allocate jobs to students and notify groups of students about matching listings</p>
                 </div>
-                <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center gap-1.5 transition-colors"
-                >
-                    <Plus size={18} /> Allocate Job
-                </Button>
             </div>
 
             {/* Tab Navigation */}

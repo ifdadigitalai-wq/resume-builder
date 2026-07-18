@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/authGuard'
 import { db } from '@/lib/db'
 import { jsPDF } from 'jspdf'
+import { sendNotification } from '@/lib/notificationService'
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ resumeId: string }> }) {
   const { resumeId } = await params
@@ -161,14 +162,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ resu
 
   const fileName = `${targetResume.title.replace(/\s+/g, '_')}_Resume.pdf`
   
-  // Create system notification
-  await db.notification.create({
-    data: {
-      userId: session.id,
-      message: `Successfully generated and downloaded PDF: "${fileName}".`,
-      type: 'download',
-    },
-  })
+  // Create and broadcast system notification
+  await sendNotification(
+    session.id,
+    `Successfully generated and downloaded PDF: "${fileName}".`,
+    'download'
+  )
 
   await db.activity.create({
     data: {
@@ -209,14 +208,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ res
     return NextResponse.json({ error: 'Resume not found' }, { status: 404 })
   }
 
-  // Create system notification
-  await db.notification.create({
-    data: {
-      userId: session.id,
-      message: `Successfully generated and downloaded PDF: "${fileName ?? 'resume.pdf'}".`,
-      type: 'download',
-    },
-  })
+  // Create and broadcast system notification
+  await sendNotification(
+    session.id,
+    `Successfully generated and downloaded PDF: "${fileName ?? 'resume.pdf'}".`,
+    'download'
+  )
 
   await db.activity.create({
     data: {

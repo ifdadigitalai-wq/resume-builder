@@ -1,6 +1,5 @@
 import { JobProvider } from '../provider';
 import { Job, JobSearchParams, JobSearchResult } from '../types';
-import { MOCK_JOBS } from '../data/mockJobs';
 
 export class NaukriJobProvider implements JobProvider {
   name = 'Naukri.com';
@@ -145,25 +144,16 @@ export class NaukriJobProvider implements JobProvider {
       };
     } catch (e) {
       console.error('Naukri Scraper Error:', e);
-      const filtered = MOCK_JOBS.filter(j => 
-        j.source === 'naukri.com' && 
-        (query === 'Professional' || 
-         j.title.toLowerCase().includes(query.toLowerCase()) || 
-         j.description.toLowerCase().includes(query.toLowerCase()))
-      );
       return {
-        jobs: filtered.slice(0, limit),
-        total: filtered.length,
+        jobs: [],
+        total: 0,
         page,
-        totalPages: Math.ceil(filtered.length / limit) || 1
+        totalPages: 0,
       };
     }
   }
 
   async getJobById(id: string): Promise<Job | null> {
-    const mockJob = MOCK_JOBS.find(j => j.id === id);
-    if (mockJob) return mockJob;
-
     const slug = id.replace('naukri-', '');
 
     try {

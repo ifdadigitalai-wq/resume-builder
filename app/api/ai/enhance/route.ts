@@ -109,8 +109,6 @@ export async function POST(req: NextRequest) {
       signal: abortController.signal,
     })
 
-    clearTimeout(timeoutId)
-
     const stream = new ReadableStream({
       async start(controller) {
         try {
@@ -122,8 +120,14 @@ export async function POST(req: NextRequest) {
         } catch (streamErr: any) {
           console.error('Error during AI stream generation:', streamErr)
           controller.error(streamErr)
+        } finally {
+          clearTimeout(timeoutId)
         }
       },
+      cancel() {
+        abortController.abort()
+        clearTimeout(timeoutId)
+      }
     })
 
     return new Response(stream, {

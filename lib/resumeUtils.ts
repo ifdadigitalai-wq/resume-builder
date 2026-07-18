@@ -101,4 +101,14 @@ export function cleanBullet(bullet: string): string {
   return bullet.replace(/^[\s*•\-◦▪]+/g, '').trim()
 }
 
+export function isPlacementReady(completion: number, ats: number): boolean {
+  return completion >= 90 && ats >= 80
+}
+
+export function derivePlacementStatus(completion: number, ats: number): 'Ready' | 'In Progress' | 'Not Started' {
+  if (isPlacementReady(completion, ats)) return 'Ready'
+  if (completion >= 50) return 'In Progress'
+  return 'Not Started'
+}
+
 

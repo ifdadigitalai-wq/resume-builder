@@ -104,6 +104,9 @@ export default function ATSPage() {
   // Load target jobId details if present
   useEffect(() => {
     if (!jobId || hasTriggered) return;
+    
+    setHasTriggered(true); // Prevent concurrent/looping fetch requests
+    
     fetch(`/api/jobs/detail?id=${jobId}`)
       .then((r) => r.json())
       .then(({ job }) => {
@@ -115,13 +118,13 @@ export default function ATSPage() {
           showToast(`Prefilled details for ${job.title}`, 'success');
 
           if (triggerAudit) {
-            setHasTriggered(true);
             analyze(job.description);
           }
         }
       })
       .catch((err) => {
         console.error('Failed to load job details in ATS audit:', err);
+        setHasTriggered(false); // Reset on failure to allow retry
       });
   }, [jobId, triggerAudit, hasTriggered, setATSJobDescription, addHistory, showToast, analyze]);
 
