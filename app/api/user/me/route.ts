@@ -49,6 +49,7 @@ export async function PATCH(req: NextRequest) {
       course: body.course,
       linkedIn: body.linkedIn,
       github: body.github,
+      avatarUrl: body.avatarUrl,
     },
     select: {
       id: true,

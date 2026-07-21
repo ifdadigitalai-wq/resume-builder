@@ -8,7 +8,14 @@ import { useAIAction } from '@/hooks/useAIAction';
 import { useUIStore } from '@/store/uiStore';
 
 export function SkillsForm() {
-  const skills = useResumeStore((s) => s.resume.skills) ?? [];
+  const rawSkills = useResumeStore((s) => s.resume.skills) ?? [];
+  const skills = (Array.isArray(rawSkills) ? rawSkills : []).map((s) => {
+    if (typeof s === 'string') return s;
+    if (s && typeof s === 'object') {
+      return (s as any).keyword || (s as any).name || (s as any).skill || JSON.stringify(s);
+    }
+    return String(s);
+  });
   const updateSection = useResumeStore((s) => s.updateSection);
   const showToast = useUIStore((s) => s.showToast);
 

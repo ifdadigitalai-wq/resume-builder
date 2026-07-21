@@ -23,6 +23,7 @@ export function TopBar({ title, resumeId, className }: TopBarProps) {
   const { toggleSidebar } = useUIStore()
   const [isLoggedIn, setIsLoggedIn] = useState(true)
   const [userName, setUserName] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
   const [openMenu, setOpenMenu] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -54,6 +55,7 @@ export function TopBar({ title, resumeId, className }: TopBarProps) {
       .then(data => {
         if (data?.user) {
           setUserName(data.user.name || '')
+          setAvatarUrl(data.user.avatarUrl || '')
         }
       })
       .catch(() => {})
@@ -441,9 +443,13 @@ export function TopBar({ title, resumeId, className }: TopBarProps) {
               onClick={() => setOpenMenu(!openMenu)}
               className="flex items-center gap-2 rounded-full px-2 py-1 hover:bg-blue-50 transition"
             >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
-                {userName ? userName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'U'}
-              </div>
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="Avatar" className="w-9 h-9 rounded-full object-cover shadow-md" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md">
+                  {userName ? userName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'U'}
+                </div>
+              )}
             </button>
 
             {openMenu && (

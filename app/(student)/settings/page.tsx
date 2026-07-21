@@ -16,6 +16,7 @@ export default function SettingsPage() {
     phone: '',
     department: 'Kalkaji',
     course: 'Accounting',
+    avatarUrl: '',
   })
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export default function SettingsPage() {
             phone: data.user.phone ?? '',
             department: data.user.batch ?? 'Kalkaji',
             course: data.user.course ?? 'Accounting',
+            avatarUrl: data.user.avatarUrl ?? '',
           })
         }
       })
@@ -45,15 +47,40 @@ export default function SettingsPage() {
           phone: profile.phone,
           batch: profile.department,
           course: profile.course,
+          avatarUrl: profile.avatarUrl,
         })
       })
       if (!res.ok) throw new Error('Save settings failed')
       showToast('Settings saved successfully!', 'success')
+      window.location.reload()
     } catch {
       showToast('Failed to save settings', 'error')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      const img = new Image()
+      img.src = reader.result as string
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = 150
+        canvas.height = 150
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, 150, 150)
+          const compressed = canvas.toDataURL('image/jpeg', 0.8)
+          setProfile(p => ({ ...p, avatarUrl: compressed }))
+        }
+      }
+    }
+    reader.readAsDataURL(file)
   }
 
   return (
@@ -62,8 +89,27 @@ export default function SettingsPage() {
       <section className="relative overflow-hidden rounded-2xl border bg-gradient-to-br from-blue-50 to-indigo-100 p-6 shadow-lg backdrop-blur-xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
           <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-500 text-white text-xl font-bold shadow-lg">
-              {profile.name ? profile.name.slice(0, 2).toUpperCase() : 'US'}
+            <div className="relative group cursor-pointer">
+              {profile.avatarUrl ? (
+                <img 
+                  src={profile.avatarUrl} 
+                  alt="Avatar" 
+                  className="h-16 w-16 rounded-xl object-cover shadow-lg border-2 border-white"
+                />
+              ) : (
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-indigo-500 text-white text-xl font-bold shadow-lg">
+                  {profile.name ? profile.name.slice(0, 2).toUpperCase() : 'US'}
+                </div>
+              )}
+              <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 text-white text-[10px] font-black rounded-xl opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-center p-1 leading-tight">
+                Upload Image
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={handleAvatarChange} 
+                  className="hidden" 
+                />
+              </label>
             </div>
             <div>
               <Badge variant="blue" className="mb-1">Student profile</Badge>

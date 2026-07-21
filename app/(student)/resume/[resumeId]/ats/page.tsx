@@ -16,7 +16,7 @@ import { useResumeStore } from '@/store/resumeStore';
 import { useAIAction } from '@/hooks/useAIAction';
 import { useUIStore } from '@/store/uiStore';
 import { useResumeSync } from '@/hooks/useResumeSync';
-import { Sparkles, ArrowRight, Loader2, Briefcase, History, ChevronDown, Check } from 'lucide-react';
+import { Sparkles, ArrowRight, Loader2, Briefcase, History, ChevronDown, Check, CloudUpload } from 'lucide-react';
 
 export default function ATSPage() {
   const router = useRouter();
@@ -37,6 +37,77 @@ export default function ATSPage() {
   const showToast = useUIStore((s) => s.showToast);
   const [fixingIndex, setFixingIndex] = useState<number | null>(null);
   const [hasTriggered, setHasTriggered] = useState(false);
+
+  // Resume File Upload inside ATS check state & handlers
+  const atsFileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingResume, setIsUploadingResume] = useState(false);
+
+  const handleUploadResumeClick = () => {
+    atsFileInputRef.current?.click();
+  };
+
+  const handleUploadResumeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingResume(true);
+    showToast('Uploading and parsing resume...', 'info');
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const parseRes = await fetch('/api/resume/parse', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!parseRes.ok) {
+        const errorData = await parseRes.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to parse resume');
+      }
+
+      const { sections } = await parseRes.json();
+
+      const updateRes = await fetch(`/api/resume/${resumeId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sections,
+        }),
+      });
+
+      if (!updateRes.ok) throw new Error('Failed to update resume details');
+      const { resume: updatedResume } = await updateRes.json();
+
+      const parsedSections = updatedResume.sections || {};
+      setResume({
+        id: updatedResume.id,
+        title: updatedResume.title,
+        personal: parsedSections.personal ?? { fullName: '', email: '', phone: '', location: '', socials: {} },
+        summary: parsedSections.summary ?? '',
+        experience: parsedSections.experience ?? [],
+        education: parsedSections.education ?? [],
+        skills: parsedSections.skills ?? [],
+        projects: parsedSections.projects ?? [],
+        certifications: parsedSections.certifications ?? [],
+        completionScore: updatedResume.completionScore,
+        status: updatedResume.status,
+      });
+
+      showToast('Resume uploaded and updated successfully!', 'success');
+
+      if (jobDescription.trim()) {
+        await analyze(jobDescription);
+      }
+    } catch (err: any) {
+      console.error(err);
+      showToast(err.message || 'Failed to upload resume.', 'error');
+    } finally {
+      setIsUploadingResume(false);
+      if (atsFileInputRef.current) atsFileInputRef.current.value = '';
+    }
+  };
 
   // Job description tracker & picker state
   const [officialJobs, setOfficialJobs] = useState<any[]>([]);
@@ -334,7 +405,8 @@ export default function ATSPage() {
                   {activeTitle || 'None selected'}
                 </span>
               </div>
-              <div className="relative" ref={dropdownRef}>
+              <div className="flex items-center gap-2 shrink-0">
+                <div className="relative" ref={dropdownRef}>
                 <Button
                   variant="secondary"
                   size="sm"
@@ -471,6 +543,29 @@ export default function ATSPage() {
 
                   </div>
                 )}
+                </div>
+
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={isUploadingResume}
+                  onClick={handleUploadResumeClick}
+                  className="flex items-center gap-1.5 px-3 py-1.5 h-8 border-slate-200 text-xs font-semibold rounded-lg hover:bg-slate-50 text-slate-700 shrink-0"
+                >
+                  {isUploadingResume ? (
+                    <Loader2 className="h-3.5 w-3.5 text-slate-500 animate-spin" />
+                  ) : (
+                    <CloudUpload className="h-3.5 w-3.5 text-slate-500" />
+                  )}
+                  {isUploadingResume ? 'Uploading...' : 'Upload Resume'}
+                </Button>
+                <input
+                  type="file"
+                  ref={atsFileInputRef}
+                  onChange={handleUploadResumeChange}
+                  accept=".pdf,.docx"
+                  className="hidden"
+                />
               </div>
             </div>
 

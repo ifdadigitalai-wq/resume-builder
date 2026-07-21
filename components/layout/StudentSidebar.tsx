@@ -29,6 +29,7 @@ export function StudentSidebar() {
   const [userName, setUserName] = useState('Student');
   const [userCourse, setUserCourse] = useState('');
   const [userBatch, setUserBatch] = useState('');
+  const [avatarUrl, setAvatarUrl] = useState('');
 
   useEffect(() => {
     fetch('/api/dashboard/stats')
@@ -50,6 +51,7 @@ export function StudentSidebar() {
           setUserName(data.user.name || 'Student');
           setUserCourse(data.user.course || '');
           setUserBatch(data.user.batch || '');
+          setAvatarUrl(data.user.avatarUrl || '');
         }
       })
       .catch(() => {});
@@ -250,9 +252,13 @@ export function StudentSidebar() {
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3 backdrop-blur-xl">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 font-bold text-white">
-                  {getInitials(userName)}
-                </div>
+                {avatarUrl ? (
+                  <img src={avatarUrl} alt="Avatar" className="h-11 w-11 rounded-full object-cover border border-white/20" />
+                ) : (
+                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-cyan-400 font-bold text-white">
+                    {getInitials(userName)}
+                  </div>
+                )}
 
                 <div className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#07111F] bg-emerald-400" />
               </div>
